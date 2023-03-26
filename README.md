@@ -8,5 +8,5 @@ Data = storage of data
     
  R = storage of R code
   - Data_to_input = managing, preparing files from measurements to be R code ready
-      - Getting_nanodrop_to_csv.R = Converting tsv files produced with the software 2000c Nanodrop Thermofisher to csv files
+    - Nanodrop_data_management = Cleaning, merging and analyzing nanodrop data
       
