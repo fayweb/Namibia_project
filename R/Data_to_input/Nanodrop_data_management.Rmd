@@ -124,6 +124,19 @@ ggplot(Nanodrop %>%
     labs(x = "Concentration of DNA in ng/µl", y = "Quality of DNA, 260/230", 
          title = "Assessing quality of DNA with Nanodrop") 
 ```
+
+
+```{r}
+           
+ggplot(Nanodrop %>%
+    filter(animal == "rodent", Quality_260_230 < 2.5, Quality_260_230 > 1.8), 
+    aes(x = Nucleic_Acid, y = Quality_260_230)) +
+    geom_jitter() +
+    labs(x = "Concentration of DNA in ng/µl", y = "Quality of DNA, 260/230", 
+         title = "Assessing quality of DNA with Nanodrop") 
+```
+
+
 Select the samples having the golden ratios
 
 ```{r}
