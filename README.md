@@ -9,4 +9,6 @@ Data = storage of data
  R = storage of R code
   - Data_to_input = managing, preparing files from measurements to be R code ready
     - Nanodrop_data_management = Cleaning, merging and analyzing nanodrop data
+  - Input_to_product = Code to transform clean data to data products ready for analysis
+    - DCM = Code to merge clean nanodrop, PCR and catching/tracking data
       
