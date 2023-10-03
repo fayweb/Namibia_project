@@ -2,7 +2,9 @@
 title: "Nanodrop_data_management"
 author: "Fay"
 date: "2023-03-26"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -22,8 +24,27 @@ library(ggplot2)
 ```
 
 ## Read the tsv nanodrop and write them as csv
+### David
+```{r, message = FALSE, warning = FALSE}
+#read tsv table
+David <- read_tsv("~/GitHub/Namibia_project/Data/Nanodrop_measurements/David_Nanodrop_DNA-Extractions.tsv")
 
-## Düppel
+# remove ffirst column
+David <-  David[,-1]
+
+#add column sample type
+David <- David %>% 
+    mutate(animal = "David")
+
+#change the column names
+
+write.csv(David, 
+          "~/GitHub/Namibia_project/Data/Nanodrop_measurements/CSV/David.csv",
+          row.names = FALSE)
+```
+
+
+### Düppel
 
 ```{r, message = FALSE, warning = FALSE}
 #read tsv table
@@ -32,9 +53,6 @@ Duppel_1 <- read_tsv("~/GitHub/Namibia_project/Data/Nanodrop_measurements/Düppe
 # remove ffirst column
 Duppel_1 <-  Duppel_1[,-1]
 
-#add column sample type
-Duppel_1 <- Duppel_1 %>% 
-    mutate(animal = "ruminant")
 
 #change the column names
 
@@ -48,17 +66,17 @@ write.csv(Duppel_1,
 ```{r, message = FALSE, warning = FALSE}
 #read tsv table
 Rodent_1 <- read_tsv("~/GitHub/Namibia_project/Data/Nanodrop_measurements/Rodents_26032023.tsv")
+Rodent_2 <- read_tsv("~/GitHub/Namibia_project/Data/Nanodrop_measurements/Rodents_27032023.tsv")
+
+#combine the measuerements
+Rodent <- rbind(Rodent_1,Rodent_2)
 
 # remove first column
-Rodent_1 <-  Rodent_1[,-1]
+Rodent <-  Rodent[,-1]
 
-#add column sample type
-Rodent_1 <- Rodent_1 %>% 
-    mutate(animal = "rodent")
-#change the column names
 
-write.csv(Rodent_1, 
-          "~/GitHub/Namibia_project/Data/Nanodrop_measurements/CSV/Rodents_26032023.csv",
+write.csv(Rodent, 
+          "~/GitHub/Namibia_project/Data/Nanodrop_measurements/CSV/Nano_ticks_rode_other_26032023.csv",
           row.names = FALSE)
 ```
 
@@ -66,12 +84,23 @@ write.csv(Rodent_1,
 ## Merging the tables
 
 ```{r}
-Nanodrop <- rbind(Duppel_1, Rodent_1)
+Nanodrop <- rbind(Duppel_1, Rodent)
 
 
 # remove spaces
 colnames(Nanodrop) <- gsub(" ", "_", colnames(Nanodrop))
 
+# add a column to desvribe if nanodrop sample is treated with proteinase K
+Nanodrop <- Nanodrop %>%
+    dplyr::mutate(Proteinase_K = FALSE)
+
+
+#  sample 3 LJ-001+
+Nanodrop[2,1]  <- "LJ-001+"
+
+# add the treatment of samples with proteinase k
+Nanodrop[1:4, 12] <- TRUE
+ 
 
 Nanodrop <- Nanodrop %>%
     dplyr::rename(Quality_260_280 = '260/280',
@@ -82,8 +111,7 @@ Nanodrop <- Nanodrop %>%
 ## Assessing the quality of the DNA
 
 ```{r}
-ggplot(Nanodrop %>%
-    filter(animal == "rodent"), aes(x = Nucleic_Acid, y = Quality_260_280)) +
+ggplot(Nanodrop, aes(x = Nucleic_Acid, y = Quality_260_280)) +
     geom_jitter() +
     labs(x = "Concentration of DNA in ng/µl", y = "Quality of DNA 260/280 ratio", 
          title = "Assessing quality of DNA with Nanodrop") 
@@ -94,7 +122,7 @@ Let's filter out the samples with eextremely high ratios
 ```{r}
            
 ggplot(Nanodrop %>%
-    filter(animal == "rodent", Quality_260_280 < 2.5,  Quality_260_280 > 1.5 ),
+    filter(Quality_260_280 < 2.5,  Quality_260_280 > 1.5 ),
     aes(x = Nucleic_Acid, y = Quality_260_280)) +
     geom_jitter() +
     labs(x = "Concentration of DNA in ng/µl", y = "Quality of DNA", 
@@ -106,8 +134,17 @@ Assesing the quality of 260/230
 
 ```{r}
            
-ggplot(Nanodrop %>%
-    filter(animal == "rodent" ),
+ggplot(Nanodrop,
+    aes(x = Nucleic_Acid, y = Quality_260_230)) +
+    geom_jitter() +
+    labs(x = "Concentration of DNA in ng/µl", y = "Quality of DNA, 260/230", 
+         title = "Assessing quality of DNA with Nanodrop") 
+```
+
+
+```{r}
+           
+ggplot(Nanodrop %>% filter(Quality_260_230 < 60), 
     aes(x = Nucleic_Acid, y = Quality_260_230)) +
     geom_jitter() +
     labs(x = "Concentration of DNA in ng/µl", y = "Quality of DNA, 260/230", 
@@ -118,18 +155,7 @@ ggplot(Nanodrop %>%
 ```{r}
            
 ggplot(Nanodrop %>%
-    filter(animal == "rodent", Quality_260_230 < 60), 
-    aes(x = Nucleic_Acid, y = Quality_260_230)) +
-    geom_jitter() +
-    labs(x = "Concentration of DNA in ng/µl", y = "Quality of DNA, 260/230", 
-         title = "Assessing quality of DNA with Nanodrop") 
-```
-
-
-```{r}
-           
-ggplot(Nanodrop %>%
-    filter(animal == "rodent", Quality_260_230 < 2.5, Quality_260_230 > 1.8), 
+    filter(Quality_260_230 < 2.5, Quality_260_230 > 1.8), 
     aes(x = Nucleic_Acid, y = Quality_260_230)) +
     geom_jitter() +
     labs(x = "Concentration of DNA in ng/µl", y = "Quality of DNA, 260/230", 
@@ -141,6 +167,7 @@ Select the samples having the golden ratios
 
 ```{r}
 Nanodrop %>%
-    filter(animal == "rodent", Quality_260_280 < 2.5,  Quality_260_280 > 1.5 )
+    filter( Quality_260_280 < 2.5,  Quality_260_280 > 1.5 )
 ```
+
 
