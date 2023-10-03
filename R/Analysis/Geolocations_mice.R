@@ -58,7 +58,7 @@ combined_plot <- plot_grid(
 print(combined_plot)
 
 
-ggsave("Lodge_location.png", combined_plot, width = 10, height = 7, dpi = 300)
+ggsave("Figures/Maps/Lodge_location.png", combined_plot, width = 10, height = 7, dpi = 300)
 
 
 # Location: Bildah
@@ -77,7 +77,7 @@ print(combined_plot)
 
 
 
-ggsave("Bildah_locations.png", combined_plot, width = 10, height = 7, dpi = 300)
+ggsave("Figures/Maps/Bildah_locations.png", combined_plot, width = 10, height = 7, dpi = 300)
 
 # Location: Cheetah research station
 img1 <- ggdraw() + draw_image("Figures/Maps/3.Cheetah_research_station.png")
@@ -94,5 +94,5 @@ combined_plot <- plot_grid(
 print(combined_plot)
 
 
-ggsave("Cheetah_location.png", combined_plot, width = 10, height = 7, dpi = 300)
+ggsave("Figures/Maps/Cheetah_location.png", combined_plot, width = 10, height = 7, dpi = 300)
 
