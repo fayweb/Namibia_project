@@ -67,7 +67,7 @@ img2 <- ggdraw() + draw_image("Figures/Maps/4.Bildah_type.png")
 
 combined_plot <- plot_grid(
     img1, NULL, img2,         # The NULL creates an empty column for spacing
-    labels = c("A. Rodent species", "", "B. Location of rodents"), # Labels for each panel. The empty label ("") corresponds to the NULL/spacing column.
+    labels = c("C. Rodent species", "", "D. Location of rodents"), # Labels for each panel. The empty label ("") corresponds to the NULL/spacing column.
     label_size = 14,          # Adjust size as needed
     ncol = 3,                 # Increase to 3 because of the added NULL/spacing column
     rel_widths = c(1, 0.1, 1) # Relative widths of the columns. Adjust the 0.1 to increase/decrease spacing.
@@ -85,7 +85,7 @@ img2 <- ggdraw() + draw_image("Figures/Maps/6.Cheetah_research_station_type.png"
 
 combined_plot <- plot_grid(
     img1, NULL, img2,         # The NULL creates an empty column for spacing
-    labels = c("A. Rodent species", "", "B. Location of rodents"), # Labels for each panel. The empty label ("") corresponds to the NULL/spacing column.
+    labels = c("E. Rodent species", "", "F. Location of rodents"), # Labels for each panel. The empty label ("") corresponds to the NULL/spacing column.
     label_size = 14,          # Adjust size as needed
     ncol = 3,                 # Increase to 3 because of the added NULL/spacing column
     rel_widths = c(1, 0.1, 1) # Relative widths of the columns. Adjust the 0.1 to increase/decrease spacing.
