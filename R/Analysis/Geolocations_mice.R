@@ -1,13 +1,15 @@
 library(dplyr)
 library(tidyr)
 library(ggplot2)
-library(tmap)
-library(tmaptools)
+library(mapview)
 library(sf)
 library(rnaturalearth)
 library(sf)
 library(cowplot)
 library(magick)
+library(RColorBrewer)
+library(stringr)
+library(tmap)
 
 
 df <- read.csv("Data/Field_tracking_data/Rodents_catching_data.csv")
@@ -21,6 +23,15 @@ df$Morphology_species <-
 df$Morphology_species <- 
     gsub("House_mouse\\?", "House_mouse", df$Morphology_species)
 
+df$Date <- str_replace(df$Date, "2024", "2023")
+df$Date <- str_replace(df$Date, "2025", "2023")
+df$Date <- str_replace(df$Date, "2026", "2023")
+df$Date <- str_replace(df$Date, "2027", "2023")
+df$Date <- str_replace(df$Date, "2028", "2023")
+df$Date <- str_replace(df$Date, "2029", "2023")
+df$Date <- str_replace(df$Date, "2030", "2023")
+
+
 df <- df %>%
     mutate(Sex = ifelse(Sex == "", "unidentified", Sex))
 
@@ -30,17 +41,20 @@ df$Sex <-
 # convert the df into a spatial df
 df_sf <- st_as_sf(df, coords = c("Longitude", "Latitude"), crs = 4326)
 
-#tmap_mode("view")  # Use this for interactive maps
+
+unique_species <- unique(df_sf$Morphology_species)
+color_scheme <- brewer.pal(length(unique_species), "Set1")
+names(color_scheme) <- unique_species
+
 
 # map on species and geolocations
-tm_basemap("OpenStreetMap") + 
-    tm_shape(df_sf) + 
-    tm_dots(col = "Morphology_species", 
-            title = "Species", 
-            palette = "Set1", 
-            size = 0.5, 
-            border.col = "white", 
-            id = "Sample_ID")
+mapview(df_sf, 
+        zcol = "Morphology_species", 
+        col.regions = color_scheme, 
+        map.types = "OpenStreetMap",
+        popup = "Sample_ID",
+        legend = TRUE)
+
 
 # map on location and structure where the rodent was caught
 tm_basemap("OpenStreetMap") + 
@@ -152,6 +166,6 @@ p <- ggplot(sex_counts, aes(x = "", y = count, fill = Sex)) +
           axis.title.y = element_blank()) # Hide y-axis title
 
 # Save the plot as an image
-ggsave("sex_distribution_pie_chart.png", p, width = 7, height = 7, dpi = 300)
+ggsave("Figures/Plots/sex_distribution_pie_chart.png", p, width = 7, height = 7, dpi = 300)
 
 
