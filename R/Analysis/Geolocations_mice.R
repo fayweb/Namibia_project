@@ -11,6 +11,8 @@ library(RColorBrewer)
 library(stringr)
 library(tmap)
 
+# set the current repository to project directory before
+#setwd("~/GitHub/Namibia_project/")
 
 df <- read.csv("Data/Field_tracking_data/Rodents_catching_data.csv")
 
