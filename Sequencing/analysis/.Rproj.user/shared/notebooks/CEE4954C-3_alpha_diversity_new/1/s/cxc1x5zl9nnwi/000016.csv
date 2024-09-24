@@ -1,0 +1,7 @@
+"0","ps0.rar <- add_seqdepth(ps_filter1)"
+"0",""
+"0","sample_data(ps0.rar) %>% data.frame() %>%"
+"0","  mutate(idx = rownames(sample_data(ps0.rar))) %>% "
+"0","  ggplot(aes(x = Depth, fill = sample_or_control)) +"
+"0","  geom_histogram(bins = 50) +"
+"0","  geom_vline(xintercept = 500, col = ""red"") "

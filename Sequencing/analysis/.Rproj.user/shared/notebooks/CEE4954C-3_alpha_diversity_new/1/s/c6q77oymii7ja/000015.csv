@@ -1,0 +1,5 @@
+"0","otu_tab <- t(abundances(ps1))"
+"0","p <- vegan::rarecurve(otu_tab, "
+"0","                      step = 50, label = FALSE, "
+"0","                      sample = min(rowSums(otu_tab), "
+"0","                                   col = ""blue"", cex = 0.6))"

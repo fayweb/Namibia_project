@@ -1,0 +1,418 @@
+---
+title: "composition_plots"
+author: "Marly"
+date: "2024-07-30"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+```{r}
+
+options(width = 100)
+library(microViz)
+library(phyloseq)
+library(ggplot2)
+library(patchwork) # for arranging groups of plots
+library(microbiome) # data analysis and visualisation
+library(phyloseq) # also the basis of data object. Data analysis and visualisation
+library(microbiomeutilities) # some utility tools 
+library(RColorBrewer) # nice color options
+library(ggpubr) # publication quality figures, based on ggplot2
+library(DT) # interactive tables in html and markdown
+library(data.table) # alternative to data.frame
+library(dplyr) # data handling
+library(microbiome) # data analysis and visualisation
+library(phyloseq) # also the basis of data object. Data analysis and visualisation
+library(microbiomeutilities) # some utility tools 
+library(RColorBrewer) # nice color options
+library(ggpubr) # publication quality figures, based on ggplot2
+library(DT) # interactive tables in html and markdown
+library(data.table) # alternative to data.frame
+library(dplyr) # data handling 
+library(knitr)
+library(ggplot2)
+library(RSQLite)
+library(DECIPHER)
+library(DESeq2)
+library(gridExtra)
+library(ggnewscale) ##new_scale()
+library(ggpubr) # ggarrange and ggerrorplot function
+library(ggthemes)
+library(grid) # rasterGrob()
+library(vegan)
+library(phyloseq)
+library(png)
+library(qgraph) # graph layout
+library(ggsignif)
+library(RColorBrewer)
+library(tidyverse) # includes: ggplot2, dplyr, tidyr, readr, purr, tibble, stringr, forcats
+library(knitr)
+library(microbiomeAnalysis)
+library(patchwork)
+knitr::opts_chunk$set(fig.height = 6, fig.width = 9)
+```
+
+
+Load packages and data
+```{r}
+
+options(width = 100)
+library(microViz)
+library(phyloseq)
+library(ggplot2)
+library(patchwork) # for arranging groups of plots
+knitr::opts_chunk$set(fig.height = 6, fig.width = 9)
+```
+
+Open the  phyloseq 
+```{r}
+ps <- readRDS("/Users/u_erazo/Documents/LABbook/2024/Namibia_sequencing/analysis/phyobjects/Namibia_samples_decont.rds")
+
+ps
+
+```
+
+Filter the data by reads 
+```{r}
+ps2 = prune_samples(sample_sums(ps)>=200, ps)
+ps2
+ps <- ps2
+```
+
+```{r}
+ps %>%
+  tax_filter(min_prevalence = 2) %>%
+  tax_fix() %>%
+  phyloseq_validate()
+
+
+ps_fix <- ps %>%
+ tax_fix(
+  min_length = 4,
+  unknowns = c(""),
+  sep = " ", anon_unique = TRUE,
+  suffix_rank = "classified"
+ )
+
+
+data <- meta(ps_fix)
+
+```
+
+```{r}
+rank_names(ps_fix)
+```
+
+
+
+*COMPOSITION larvae*
+
+```{r}
+library(tidyverse)
+library(scales)
+library(RColorBrewer)
+library(ggsci)
+library(wesanderson)
+library(ggthemes)
+library(ggplot2)
+
+pal_uchicago(palette = c("default", "light", "dark"), alpha = 1)
+
+#subset of the ps1 object containing only those samples where more than 50% of the samples have a value greater than 5
+ps1.1 = genefilter_sample(ps_fix, filterfun_sample(function(x) x > 5), A=0.5*nsamples(ps_fix))
+ps2 = prune_taxa(ps1.1, ps_fix)
+
+#relative abundance normalization
+ps2.comp = transform_sample_counts(ps2, function(x) {x <- x + 0.5; x / sum(x)})
+
+ps2.top20 <- prune_taxa(names(sort(taxa_sums(ps2.comp),TRUE)[1:50]), ps2.comp)
+meta_top20 <- microbiome::meta(ps2.top20)
+sample_data(ps2.top20) <- meta_top20
+```
+
+```{r}
+ps2 %>%
+  comp_barplot(tax_level = "Species") +
+  coord_flip() # horizontal bars are often more readable
+
+```
+        
+        
+
+```{r}
+library(scales)
+
+myPal <- tax_palette(
+  data = ps2, rank = "Species", n = 25, pal = "greenArmytage",
+  add = c(Other = "white")
+)
+tax_palette_plot(myPal)
+
+```
+
+```{r}
+# Override existing values
+myPal["Muribaculaceae Family"] <-  "#725663FF" 
+myPal["Lactobacillus Genus"] <-"#5B8FA8FF"
+myPal["Lachnospiraceae NK4A136 group Genus"] <- "#800000FF" 
+myPal["Limosilactobacillus Genus"] <- "#FFB547FF" 
+myPal["lachnospiraceae Family"] <- "#8A8B79FF" 
+myPal["Oscillospiraceae Family"] <-  "#ADB17DFF"
+myPal["unassigned"] <- "#D6D6CEFF" 
+myPal["other"] <- "#D49464FF" 
+myPal["Yersinia"] <-  "#B1746FFF" 
+myPal["Comamonas"] <-   "#9A5324FF" 
+myPal["Undibacterium"] <-   "#C5B0D5"
+myPal["Acinetobacter"] <-  "#350E20FF"
+myPal["Masillia"] <-  "#767676FF"
+myPal["Bosea"] <-  "#BCBD22"
+myPal["Delfia"] <- "#0F425CFF"
+
+tax_palette_plot(myPal)
+```
+
+```{r}
+ps2.top20 %>%
+  comp_barplot(
+    tax_level = "Species", palette = myPal,
+     # name an alternative variable to label axis
+    n_taxa = 15, # give more taxa unique colours
+    taxon_renamer = function(x) stringr::str_replace_all(x, "_", " "), # remove underscores
+    other_name = "Other genera", # set custom name for the "other" category
+    merge_other = FALSE, # split the "Other" category to display alpha diversity
+    bar_width = 0.7, # reduce the bar width to 70% of one row
+    bar_outline_colour = "grey5" # is the default (use NA to remove outlines)
+  ) +
+  coord_flip()
+```
+
+
+```{r}
+# Override existing values
+myPal["Cedecea"] <- "#D6D6CEFF" 
+myPal["Elizabethkingia"] <-"#5B8FA8FF"
+myPal["Asaia"] <- "#800000FF" 
+myPal["Serratia"] <- "#FFB547FF" 
+myPal["Enterobacter"] <- "#8A8B79FF" 
+myPal["Other"] <-  "#ADB17DFF"
+myPal["Rahnella"] <-  "#725663FF"
+myPal["Chryseobacterium"] <- "#D49464FF" 
+myPal["Yersinia"] <-  "#B1746FFF" 
+myPal["Comamonas"] <-   "#9A5324FF" 
+myPal["Undibacterium"] <-   "#C5B0D5"
+myPal["Acinetobacter"] <-  "#350E20FF"
+myPal["Masillia"] <-  "#767676FF"
+myPal["Bosea"] <-  "#BCBD22"
+myPal["Delfia"] <- "#0F425CFF"
+
+tax_palette_plot(myPal)
+```
+
+```{r}
+ps2 %>%
+  ps_filter(sample_type == "larvae") %>%
+  comp_barplot(
+    tax_level = "Genus", palette = myPal,
+    n_taxa = 20, other_name = "Other", merge_other = FALSE
+  ) +
+  coord_flip()
+```
+
+****COMPOSITION****
+
+```{r}
+ps2 %>%
+  comp_barplot(tax_level = "Genus",  facet_by = "sample_type", 
+    n_taxa = 20,  palette = myPal, tax_order = prev, merge_other = FALSE) +
+  coord_flip()
+```
+```{r}
+ps2 %>%
+    ps_filter(sample_type == "water") %>%
+  # ps_select(sample_type, order_id) %>% # avoids lots of phyloseq::merge_samples warnings
+  phyloseq::merge_samples(group = "order_id") %>%
+  comp_barplot(tax_level = "Genus", n_taxa = 12, bar_width = 0.8, facet_by = "temperature ", palette = myPal) + 
+ theme(axis.text.x = element_text(angle = 90, hjust = 1)) 
+```
+```{r}
+ps2 %>%
+    ps_filter(sample_type == "water") %>%
+  # ps_select(sample_type, order_id) %>% # avoids lots of phyloseq::merge_samples warnings
+  comp_barplot(tax_level = "Genus", n_taxa = 10, bar_width = 0.8, facet_by = "temperature ", palette = myPal,  label = "order_id",) + 
+ theme(axis.text.x = element_text(angle = 90, hjust = 1)) 
+```
+
+```{r}
+ ps2.top20%>%
+  ps_filter(sample_type == "larvae") %>%
+    ps_filter(temperature == "32 °C") %>%
+  comp_barplot(
+    tax_level = "Genus", n_taxa = 15,
+    bar_outline_colour = NA, facet_by = "order_id", palette = myPal
+  )  + theme(axis.text.x = element_text(angle = 30, hjust = 1)) +
+  theme_bw(14) + theme(strip.text = element_text(
+    size = 10)) +
+   theme(axis.text.x=element_blank(), axis.ticks.x=element_blank()) 
+```
+```{r}
+ggsave("/Users/u_erazo/Documents/LABbook/2023/E1_23_Larvae_Temperature_Microbiome/scr/EMU/all/clean_data/code/Exp.4_5_6/figures/larvae_genus_32.jpg",
+        width=300,
+        height=150,
+        units="mm",
+        scale=1)
+
+```
+
+```{r}
+ water20 <- ps2.top20 %>%
+  ps_filter(sample_type == "water") %>%
+  phyloseq::merge_samples(group = "order_id") 
+
+
+  comp_barplot(water20, 
+    tax_level = "Genus", n_taxa = 12,
+    bar_outline_colour = NA, facet_by = "order_id", palette = myPal
+  )  + theme(axis.text.x = element_text(angle = 30, hjust = 1)) +
+  theme_bw(14) + theme(strip.text = element_text(
+    size = 10)) +
+   theme(axis.text.x=element_blank(), axis.ticks.x=element_blank()) 
+
+
+
+
+```
+
+
+```{r}
+ggsave("/Users/u_erazo/Documents/LABbook/2023/E1_23_Larvae_Temperature_Microbiome/scr/EMU/all/clean_data/code/Exp.4_5_6/figures/water.jpg",
+        width=300,
+        height=150,
+        units="mm",
+        scale=1)
+
+
+```
+
+
+controls:
+
+```{r}
+library(tidyverse)
+library(scales)
+library(RColorBrewer)
+library(ggsci)
+library(wesanderson)
+library(ggthemes)
+library(ggplot2)
+
+pal_uchicago(palette = c("default", "light", "dark"), alpha = 1)
+
+#subset of the ps1 object containing only those samples where more than 50% of the samples have a value greater than 5
+ps1.1 = genefilter_sample(water.food.control, filterfun_sample(function(x) x > 5), A=0.5*nsamples(water.food.control))
+ps2 = prune_taxa(ps1.1, water.food.control)
+
+#relative abundance normalization
+ps2.comp = transform_sample_counts(ps2, function(x) {x <- x + 0.5; x / sum(x)})
+
+ps2.top20 <- prune_taxa(names(sort(taxa_sums(ps2.comp),TRUE)[1:20]), ps2.comp)
+meta_top20 <- microbiome::meta(ps2.top20)
+sample_data(ps2.top20) <- meta_top20
+```
+
+```{r}
+ps2 %>%
+  comp_barplot(tax_level = "Genus") +
+  coord_flip() # horizontal bars are often more readable
+```
+
+```{r}
+ps2.top20 %>%
+  comp_barplot(
+    tax_level = "Genus",
+    label = "order_id", # name an alternative variable to label axis
+    n_taxa = 15, # give more taxa unique colours
+    taxon_renamer = function(x) stringr::str_replace_all(x, "_", " "), # remove underscores
+    other_name = "Other genera", # set custom name for the "other" category
+    merge_other = FALSE, # split the "Other" category to display alpha diversity
+    bar_width = 0.7, # reduce the bar width to 70% of one row
+    bar_outline_colour = "grey5",
+    order_with_all_taxa = TRUE,
+    # is the default (use NA to remove outlines)
+  ) + 
+  coord_flip()
+
+?comp_barplot
+
+```
+```{r}
+library(scales)
+
+myPal <- tax_palette(
+  data = ps2, rank = "Genus", n = 25, pal = "greenArmytage",
+  add = c(Other = "white")
+)
+tax_palette_plot(myPal)
+
+```
+
+```{r}
+# Override existing values
+myPal["Cedecea"] <- "#D6D6CEFF" 
+myPal["Elizabethkingia"] <-"#5B8FA8FF"
+myPal["Asaia"] <- "#800000FF" 
+myPal["Serratia"] <- "#FFB547FF" 
+myPal["Enterobacter"] <- "#8A8B79FF" 
+myPal["Other"] <-  "#ADB17DFF"
+myPal["Rahnella"] <-  "#725663FF"
+myPal["Chryseobacterium"] <- "#D49464FF" 
+myPal["Yersinia"] <-  "#B1746FFF" 
+myPal["Comamonas"] <-   "#9A5324FF" 
+myPal["Undibacterium"] <-   "#C5B0D5"
+myPal["Acinetobacter"] <-  "#350E20FF"
+myPal["Masillia"] <-  "#767676FF"
+myPal["Bosea"] <-  "#BCBD22"
+myPal["Delfia"] <- "#0F425CFF"
+
+tax_palette_plot(myPal)
+```
+```{r}
+ps2 %>%
+  # ps_filter(sample_type == "larvae") %>%
+  comp_barplot(
+    tax_level = "Genus", palette = myPal,
+    n_taxa = 12, other_name = "Other", merge_other = FALSE
+  ) +
+  coord_flip()
+```
+
+****COMPOSITION****
+
+```{r}
+ps2 %>%
+  ps_filter(sample_type == "mock") %>%
+  comp_barplot(label = "order_id", tax_level = "Species",  facet_by = "temperature", palette = myPal , merge_other = FALSE) 
+
+
+```
+```{r}
+ps2 %>%
+    # ps_filter(sample_type == "mock") %>%
+  # ps_select(sample_type, order_id) %>% # avoids lots of phyloseq::merge_samples warnings
+  phyloseq::merge_samples(group = "order_id") %>%
+  comp_barplot(tax_level = "Species", n_taxa = 12, bar_width = 0.8, facet_by = "temperature ", palette = myPal) + 
+ theme(axis.text.x = element_text(angle = 90, hjust = 1)) 
+```
+```{r}
+ ps2.top20%>%
+  comp_barplot(
+    tax_level = "Species", n_taxa = 15,
+    bar_outline_colour = NA, facet_by = "sample_type" , palette = myPal
+  )  + theme(axis.text.x = element_text(angle = 30, hjust = 1)) +
+  theme_bw(14) + theme(strip.text = element_text(
+    size = 10)) +
+   theme(axis.text.x=element_blank(), axis.ticks.x=element_blank()) 
+```

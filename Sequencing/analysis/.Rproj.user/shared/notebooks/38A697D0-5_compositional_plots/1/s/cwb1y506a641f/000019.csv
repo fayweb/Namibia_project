@@ -1,0 +1,18 @@
+"0","ps2.top20 %>%"
+"0","  comp_barplot("
+"0","    tax_level = ""Species"", palette = myPal,"
+"0","     # name an alternative variable to label axis"
+"0","    n_taxa = 15, # give more taxa unique colours"
+"0","    taxon_renamer = function(x) stringr::str_replace_all(x, ""_"", "" ""), # remove underscores"
+"0","    other_name = ""Other genera"", # set custom name for the ""other"" category"
+"0","    merge_other = FALSE, # split the ""Other"" category to display alpha diversity"
+"0","    bar_width = 0.7, # reduce the bar width to 70% of one row"
+"0","    bar_outline_colour = ""grey5"" # is the default (use NA to remove outlines)"
+"0","  ) +"
+"0","  coord_flip()"
+"2","Warning: otu_table of counts is NOT available!
+"
+"2","Warning: otu_table of counts is NOT available!
+"
+"2","Warning: otu_table of counts is NOT available!
+"

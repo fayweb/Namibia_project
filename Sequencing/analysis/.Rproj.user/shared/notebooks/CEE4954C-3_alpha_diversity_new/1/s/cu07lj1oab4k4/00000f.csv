@@ -1,0 +1,2 @@
+"0","sample_dat_info <- meta(ps1)"
+"0","sample_dat_info$sdt <- sample_sums(ps1)"

@@ -1,0 +1,4 @@
+"0","ps_all <- ps0.rar"
+"0","ps_all_alpha <- estimate_richness(ps_all, split = T,"
+"0","                                measures = c(""Observed"", ""Shannon"", ""InvSimpson"")) "
+"0","ps_all_alpha <- merge(data.frame(sample_data(ps_all)), ps_all_alpha, by = 0)"

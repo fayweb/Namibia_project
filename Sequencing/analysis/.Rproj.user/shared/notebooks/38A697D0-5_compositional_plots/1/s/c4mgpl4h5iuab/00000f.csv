@@ -1,0 +1,39 @@
+"0","library(tidyverse)"
+"0","library(scales)"
+"0","library(RColorBrewer)"
+"0","library(ggsci)"
+"0","library(wesanderson)"
+"0","library(ggthemes)"
+"0","library(ggplot2)"
+"0",""
+"0","pal_uchicago(palette = c(""default"", ""light"", ""dark""), alpha = 1)"
+"1","function (n) 
+"
+"1","{
+"
+"1","    n_values <- length(values)
+"
+"1","    if (n > n_values) {
+"
+"1","        cli::cli_warn(""This manual palette can handle a maximum of {n_values} values. You have supplied {n}"")
+"
+"1","    }
+"
+"1","    unname(values[seq_len(n)])
+"
+"1","}
+"
+"1","<bytecode: 0x31e8409d8>
+"
+"1","<environment: 0x318017970>
+"
+"0","#subset of the ps1 object containing only those samples where more than 50% of the samples have a value greater than 5"
+"0","ps1.1 = genefilter_sample(ps_fix, filterfun_sample(function(x) x > 5), A=0.5*nsamples(ps_fix))"
+"0","ps2 = prune_taxa(ps1.1, ps_fix)"
+"0",""
+"0","#relative abundance normalization"
+"0","ps2.comp = transform_sample_counts(ps2, function(x) {x <- x + 0.5; x / sum(x)})"
+"0",""
+"0","ps2.top20 <- prune_taxa(names(sort(taxa_sums(ps2.comp),TRUE)[1:50]), ps2.comp)"
+"0","meta_top20 <- microbiome::meta(ps2.top20)"
+"0","sample_data(ps2.top20) <- meta_top20"

@@ -1,0 +1,12 @@
+"0","ps_fix <- ps %>%"
+"0"," tax_fix("
+"0","  min_length = 4,"
+"0","  unknowns = c(""""),"
+"0","  sep = "" "", anon_unique = TRUE,"
+"0","  suffix_rank = ""classified"""
+"0"," )"
+"2","Row named: unassigned
+contains no non-unknown values, returning:
+'unassigned' for all replaced levels.
+Consider editing this tax_table entry manually.
+"

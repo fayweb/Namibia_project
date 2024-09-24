@@ -1,0 +1,7 @@
+"0","# import a mapping file (sample info)"
+"0",""
+"0","file_path_metadata <- file.path(dir_path, ""metadata.csv"")"
+"0",""
+"0","map_file <- paste(file_path_metadata, sep = "","")"
+"0","sampledata <- read.csv(map_file, row.names = 1)"
+"0",""

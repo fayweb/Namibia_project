@@ -1,0 +1,6 @@
+"0","reads_per_otu <- taxa_sums(ps0.1.otu)"
+"0","print(sum(reads_per_otu))"
+"1","[1]"
+"1"," 62624"
+"1","
+"

@@ -1,0 +1,6 @@
+"0","# load as phyloseq format "
+"0","library(phyloseq)"
+"0",""
+"0","OTU = otu_table(otu.file.matrix, taxa_are_rows = TRUE)"
+"0","TAX = tax_table(tax.file.matrix)"
+"0","SAM = sample_data(sampledata)"

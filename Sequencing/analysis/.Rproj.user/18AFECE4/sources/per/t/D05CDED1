@@ -1,0 +1,27 @@
+{
+    "id": "D05CDED1",
+    "path": "~/Documents/LABbook/2024/Namibia_sequencing/analysis/3_alpha_diversity_new.Rmd",
+    "project_path": "3_alpha_diversity_new.Rmd",
+    "type": "r_markdown",
+    "hash": "2264980033",
+    "contents": "",
+    "dirty": false,
+    "created": 1723040004097.0,
+    "source_on_save": false,
+    "relative_order": 6,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "last_setup_crc32": "fd2637f0bb338d19",
+        "cursorPosition": "248,0",
+        "scrollLine": "248"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1723031023,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1723040005788,
+    "read_only": false,
+    "read_only_alternatives": []
+}

@@ -1,0 +1,26 @@
+{
+    "id": "BB1FA6A0",
+    "path": "~/Documents/LABbook/2024/Namibia_sequencing/analysis/0_construct_phyloseq.Rmd",
+    "project_path": "0_construct_phyloseq.Rmd",
+    "type": "r_markdown",
+    "hash": "3029614696",
+    "contents": "",
+    "dirty": false,
+    "created": 1723039575864.0,
+    "source_on_save": false,
+    "relative_order": 4,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "48,0",
+        "scrollLine": "40"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1722955973,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1722955973,
+    "read_only": false,
+    "read_only_alternatives": []
+}

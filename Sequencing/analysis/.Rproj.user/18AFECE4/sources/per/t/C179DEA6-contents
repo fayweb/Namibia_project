@@ -1,0 +1,163 @@
+---
+title: "decontamination"
+author: "Marly"
+date: "2024-08-06"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+Before conducting alpha diversity analysis on the samples, it's crucial to ensure data quality by addressing potential contaminations. We'll achieve this by using the 'decontam' package. This step will enhance the reliability of our results and maintain best practices.
+
+#<https://benjjneb.github.io/decontam/vignettes/decontam_intro.html>
+
+
+
+```{r}
+library(decontam); packageVersion("decontam")
+library(phyloseq); packageVersion("phyloseq")
+library(ggplot2); packageVersion("ggplot2")
+```
+
+```{r}
+ps <- readRDS("/Users/u_erazo/Documents/LABbook/2024/Namibia_sequencing/analysis/phyobjects/Namibia_samples.rds")
+ps
+```
+
+```{r}
+head(sample_data(ps))
+```
+
+```{r}
+sd = data.frame(sample_data(ps))
+```
+
+#Inspect Library Size
+
+Let's take a quick first look at the library size (i.e. the number of reads) in each sample, as a function of whether that sample was a true positive sample or a negative control:
+
+```{r}
+df <- as.data.frame(sample_data(ps)) # Put sample_data into a ggplot-friendly data.frame
+df$LibrarySize <- sample_sums(ps)
+df <- df[order(df$LibrarySize),]
+df$Index <- seq(nrow(df))
+ggplot(data=df, aes(x=Index, y=LibrarySize, color=sample_or_control)) + geom_point()
+
+#ggsave("/Users/u_erazo/Documents/LABbook/2023/E1_23_Larvae_Temperature_Microbiome/scr/EMU/all/decontamination/Library_Sizes_24.2.2.png")
+```
+
+The library sizes of the positive samples primarily fall from 500 to 2000 reads, but there are some low-read outliers. The negative control samples have fewer reads as expected. Note: It is important keep the low-read samples for now, because we want to use those negative controls to help identify contaminants!
+
+##Identify Contaminants - Frequency
+
+The first contaminant identification method we'll use is the "frequency" method. In this method, the distribution of the frequency of each sequence feature as a function of the input DNA concentration is used to identify contaminants.
+
+In our phyloseq object, "quant_reading" is the sample variable that holds the concentration information:
+
+```{r}
+
+contamdf.freq <- isContaminant(ps, method="frequency", conc="conc_16s__PCR")
+head(contamdf.freq)
+
+```
+
+This calculation has returned a data.frame with several columns, the most important being \$p which containts the probability that was used for classifying contaminants, and \$contaminant which contains TRUE/FALSE classification values with TRUE indicating that the statistical evidence that the associated sequence feature is a contaminant exceeds the user-settable threshold. As we did not specify the threshold, the default value of threshold = 0.1 was used, and \$contaminant=TRUE if \$p \< 0.1.
+
+```{r}
+
+table(contamdf.freq$contaminant)
+
+```
+
+```{r}
+
+
+head(which(contamdf.freq$contaminant))
+
+```
+
+```{r}
+# Set the seed for reproducibility
+set.seed(100)
+
+# Select contaminant names using the sample function
+
+selected_contaminants <- taxa_names(ps)[sample(which(contamdf.freq$contaminant), 2)]
+
+selected_contaminants
+
+
+all_contaminants <- c(
+ 
+  selected_contaminants
+)
+
+```
+
+In this plot the dashed black line shows the model of a noncontaminant sequence feature for which frequency is expected to be independent of the input DNA concentration. The red line shows the model of a contaminant sequence feature, for which frequency is expected to be inversely proportional to input DNA concentration, as contaminating DNA will make up a larger fraction of the total DNA in samples with very little total DNA. Clearly Seq3 fits the red contaminat model very well, while Seq1 does not.
+
+Let's inspect a couple more of the ASVs that were classified as contaminants to ensure they look like what we expect:
+
+```{r}
+
+set.seed(100)
+
+# Genera las gráficas de frecuencia para cada una de las muestras
+plot_frequency(ps, taxa_names(ps)[sample(which(contamdf.freq$contaminant), 2)], conc="conc_16s__PCR") +
+    xlab("DNA Concentration (ng/ul)")
+
+
+```
+
+The two contaminants are clostridia 
+```{r}
+
+library(tidyverse)
+
+df <- as.data.frame(sample_data(ps))
+
+#create a new colum to be able to join the Taxa with the Taxa from the contamdf.freq
+tax <- tax_table(ps)
+tax <- as.data.frame(tax)
+tax$Taxa <- rownames(tax)
+
+
+```
+
+
+```{r}
+
+
+contamdf.freq$Taxa  <- rownames(contamdf.freq)
+
+
+#I want to see the name of the contaminats -> joint by taxa name 
+
+
+contamdf.freq.taxa <- inner_join(contamdf.freq, tax,  by="Taxa")
+
+```
+
+```{r}
+# remove contamination from the phyloseq 
+
+# Define the taxa you don't want like this:
+all_contaminants
+
+allTaxa = taxa_names(ps)
+
+allTaxa <- allTaxa[!(allTaxa %in% all_contaminants)]
+
+ps.noncontam = prune_taxa(allTaxa, ps)
+# new phyloseq object with just the taxa you kept.
+ps.noncontam
+
+saveRDS(ps.noncontam,"/Users/u_erazo/Documents/LABbook/2024/Namibia_sequencing/analysis/phyobjects/Namibia_samples_decont.rds")
+
+```
+
+
+
