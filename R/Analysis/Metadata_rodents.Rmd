@@ -1,0 +1,309 @@
+---
+title: "Trapping data rodents"
+author: "Fay"
+date: "2024-10-15"
+output:
+  pdf_document: default
+  word_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r warning=FALSE, message=FALSE,include = FALSE}
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(mapview)
+library(sf)
+library(rnaturalearth)
+library(sf)
+library(cowplot)
+library(magick)
+library(RColorBrewer)
+library(stringr)
+library(tmap)
+library(leaflet)
+library(lubridate)
+
+# set the current repository to project directory before
+#setwd("~/GitHub/Namibia_project/")
+
+df <- read.csv("Data/Field_tracking_data/Rodents_catching_data.csv")
+
+glimpse(df)
+
+# correct mistakes
+df$Morphology_species <- 
+    gsub("Vole\\?", "Vole", df$Morphology_species)
+
+df$Morphology_species <- 
+    gsub("House_mouse\\?", "House_mouse", df$Morphology_species)
+
+df$Date <- str_replace(df$Date, "2024", "2023")
+df$Date <- str_replace(df$Date, "2025", "2023")
+df$Date <- str_replace(df$Date, "2026", "2023")
+df$Date <- str_replace(df$Date, "2027", "2023")
+df$Date <- str_replace(df$Date, "2028", "2023")
+df$Date <- str_replace(df$Date, "2029", "2023")
+df$Date <- str_replace(df$Date, "2030", "2023")
+
+
+df <- df %>%
+    mutate(Sex = ifelse(Sex == "", "unidentified", Sex))
+
+df$Sex <- 
+    gsub("63", "unidentified", df$Sex)
+
+rodent_data <- df
+```
+
+## 1. Species distribution
+Count of unique species
+```{r}
+# Count of unique species
+species_count <- rodent_data %>%
+  group_by(Morphology_species) %>%
+  summarize(count = n())
+
+# Print species count
+print(species_count)
+
+# Bar plot of species distribution
+ggplot(species_count, aes(x = Morphology_species, y = count, fill = Morphology_species)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Distribution of Rodent Species", x = "Species", y = "Count") +
+  theme_minimal()
+
+```
+## 2. Geographical distribution of species
+Mapping species distribution
+```{r  warning=FALSE, message=FALSE,include = FALSE}
+# Use leaflet for mapping
+leaflet(rodent_data) %>%
+  addTiles() %>%
+  addCircleMarkers(~Longitude, ~Latitude, popup = ~Morphology_species,
+                   color = ~factor(Morphology_species),
+                   radius = 3, opacity = 0.8) %>%
+  addLegend("bottomright", pal = colorFactor(topo.colors(10), rodent_data$Morphology_species),
+            values = ~Morphology_species, title = "Species")
+
+```
+
+
+```{r  warning=FALSE, message=FALSE,include = FALSE}
+
+# convert the df into a spatial df
+df_sf <- st_as_sf(df, coords = c("Longitude", "Latitude"), crs = 4326)
+
+
+unique_species <- unique(df_sf$Morphology_species)
+color_scheme <- brewer.pal(length(unique_species), "Set1")
+names(color_scheme) <- unique_species
+
+
+```
+
+
+### Okambara Elephant Lodge
+
+```{r}
+
+# location: Okambara Elephan Lodge
+img1 <- ggdraw() + draw_image("Figures/Maps/2.Elephant_lodge_location_species.png")
+img2 <- ggdraw() + draw_image("Figures/Maps/5.Elephant_lodge_location_type.png")
+
+combined_plot <- plot_grid(
+    img1, NULL, img2,         # The NULL creates an empty column for spacing
+    labels = c("A. Rodent species", "", "B. Location of rodents"), # Labels for each panel. The empty label ("") corresponds to the NULL/spacing column.
+    label_size = 14,          # Adjust size as needed
+    ncol = 3,                 # Increase to 3 because of the added NULL/spacing column
+    rel_widths = c(1, 0.1, 1), # Relative widths of the columns. Adjust the 0.1 to increase/decrease spacing.
+    label_y = 0.8       # Adjust this value to move the label closer to the plot
+)
+
+print(combined_plot)
+
+ggsave("Figures/Maps/Lodge_location.png", combined_plot, width = 10, height = 7, dpi = 300)
+
+
+```
+
+### Bildah Farm
+
+```{r}
+# Location: Bildah
+img1 <- ggdraw() + draw_image("Figures/Maps/3.Bildah_species.png")
+img2 <- ggdraw() + draw_image("Figures/Maps/4.Bildah_type.png")
+
+combined_plot <- plot_grid(
+    img1, NULL, img2,         # The NULL creates an empty column for spacing
+    labels = c("C. Rodent species", "", "D. Location of rodents"), # Labels for each panel. The empty label ("") corresponds to the NULL/spacing column.
+    label_size = 14,          # Adjust size as needed
+    ncol = 3,                 # Increase to 3 because of the added NULL/spacing column
+    rel_widths = c(1, 0.1, 1), # Relative widths of the columns. Adjust the 0.1 to increase/decrease spacing.
+    label_y = 0.8)
+
+print(combined_plot)
+
+
+
+ggsave("Figures/Maps/Bildah_locations.png", combined_plot, width = 10, height = 7, dpi = 300)
+```
+### Cheetah Research station
+```{r}
+# Location: Cheetah research station
+img1 <- ggdraw() + draw_image("Figures/Maps/3.Cheetah_research_station.png")
+img2 <- ggdraw() + draw_image("Figures/Maps/6.Cheetah_research_station_type.png")
+
+combined_plot <- plot_grid(
+    img1, NULL, img2,         # The NULL creates an empty column for spacing
+    labels = c("E. Rodent species", "", "F. Location of rodents"), # Labels for each panel. The empty label ("") corresponds to the NULL/spacing column.
+    label_size = 14,          # Adjust size as needed
+    ncol = 3,                 # Increase to 3 because of the added NULL/spacing column
+    rel_widths = c(1, 0.1, 1), # Relative widths of the columns. Adjust the 0.1 to increase/decrease spacing.
+    label_y = 0.8)
+
+print(combined_plot)
+
+
+ggsave("Figures/Maps/Cheetah_location.png", combined_plot, width = 10, height = 7, dpi = 300)
+```
+## 3. Sex and age distribution
+```{r}
+# Group by species, sex, and age
+sex_age_distribution <- rodent_data %>%
+  group_by(Morphology_species, Sex, Age) %>%
+  summarize(count = n()) %>%
+  ungroup()
+
+# Plot sex distribution
+ggplot(sex_age_distribution, aes(x = Morphology_species, y = count, fill = Sex)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Sex Distribution by Species", x = "Species", y = "Count") +
+  theme_minimal()
+
+# Plot age distribution
+ggplot(sex_age_distribution, aes(x = Morphology_species, y = count, fill = Age)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Age Distribution by Species", x = "Species", y = "Count") +
+  theme_minimal()
+
+```
+
+```{r}
+# Sex counts
+sex_counts <- df %>%
+    filter(!is.na(Sex)) %>% # Filter out any rows with missing Sex data
+    group_by(Sex) %>%
+    summarise(count = n())
+
+# Plot
+p <- ggplot(sex_counts, aes(x = "", y = count, fill = Sex)) +
+    geom_bar(width = 1, stat = "identity") +
+    coord_polar("y", start=0) + # Transform the bar chart into a pie chart
+    labs(title = "Distribution of Mice by Sex", fill = "Sex") +
+    theme_minimal() +
+    theme(axis.text.x = element_blank(), # Hide x-axis labels
+          axis.title.x = element_blank(), # Hide x-axis title
+          axis.title.y = element_blank()) # Hide y-axis title
+
+p
+
+# Save the plot as an image
+ggsave("Figures/Plots/sex_distribution_pie_chart.png", p, width = 7, height = 7, dpi = 300)
+
+```
+
+
+
+## 4. Habitat Correlation
+```{r}
+# Group by species and habitat
+habitat_distribution <- rodent_data %>%
+  group_by(Morphology_species, Location_type) %>%
+  summarize(count = n()) %>%
+  ungroup()
+
+# Plot habitat distribution
+ggplot(habitat_distribution, aes(x = Location_type, y = count, fill = Morphology_species)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Species Distribution by Habitat Type", x = "Habitat Type", y = "Count") +
+  theme_minimal()
+
+```
+
+## Temporal patterns
+```{r}
+# Convert Date to date format
+rodent_data$Date <- dmy(rodent_data$Date)
+
+# Plot counts by date
+ggplot(rodent_data, aes(x = Date, fill = Morphology_species)) +
+  geom_histogram(binwidth = 1) +
+  labs(title = "Sampling Counts by Date", x = "Date", y = "Count") +
+  theme_minimal()
+
+```
+
+
+## 6. Weight distribution by species and sex
+```{r}
+# Remove NA weights for visualization
+rodent_data_clean <- rodent_data %>% drop_na(Weight_g)
+
+# Plot weight distribution
+ggplot(rodent_data_clean, aes(x = Morphology_species, y = Weight_g, fill = Morphology_species)) +
+  geom_violin() +
+  labs(title = "Weight Distribution by Species", x = "Species", y = "Weight (g)") +
+  theme_minimal()
+
+```
+
+
+```{r}
+# Average weight per species
+figure_df <- df %>%
+    group_by(Morphology_species) %>%
+    summarise(mean_weight = mean(Weight_g, na.rm = TRUE)) %>%
+    arrange(-mean_weight)  # Arrange by mean_weight in descending order
+
+
+# To view the new data frame
+figure_df
+
+```
+
+```{r}
+figure_df$Morphology_species <- factor(figure_df$Morphology_species, levels = figure_df$Morphology_species)
+
+# Plot
+p <- ggplot(figure_df, aes(x = Morphology_species, y = mean_weight)) +
+    geom_bar(stat="identity", fill="orchid1") +
+    labs(title = "Average Weight per Species", x = "Species", y = "Average Weight (g)") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+p
+
+# Save the plot as an image
+ggsave("Figures/Plots/average_weight_per_species.png", p, width = 10, height = 7, dpi = 300)
+```
+
+## Connections between variables
+```{r}
+# Scatter plot of species with latitude and longitude
+ggplot(rodent_data, aes(x = Longitude, y = Latitude, color = Morphology_species)) +
+  geom_point() +
+  labs(title = "Species Distribution by Geographic Location", x = "Longitude", y = "Latitude") +
+  theme_minimal()
+
+```
+
+
+
+
+
+
