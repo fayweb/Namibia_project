@@ -1,0 +1,5 @@
+"0","df <- as.data.frame(sample_data(ps)) # Put sample_data into a ggplot-friendly data.frame"
+"0","df$LibrarySize <- sample_sums(ps)"
+"0","df <- df[order(df$LibrarySize),]"
+"0","df$Index <- seq(nrow(df))"
+"0","ggplot(data=df, aes(x=Index, y=LibrarySize, color=sample_or_control)) + geom_point()"

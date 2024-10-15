@@ -1,0 +1,2 @@
+"0","p_seqdepth.otu <- plot_read_distribution(ps, ""sample_or_control"", ""density"")"
+"0","print(p_seqdepth.otu)"

@@ -1,0 +1,6 @@
+"0","# We make a data table with information on the OTUs"
+"0","ps0_df_taxa <- data.table(tax_table(ps),"
+"0","                          ASVabundance = taxa_sums(ps),"
+"0","                          ASV = taxa_names(ps))"
+"2","Warning: Some columns are a multi-column type (such as a matrix column): [1, 2, 3, 4, 5, 6, 7]. setDT will retain these columns as-is but subsequent operations like grouping and joining may fail. Please consider as.data.table() instead which will create a new column for each embedded column."
+"2","Warning: Some columns are a multi-column type (such as a matrix column): [1, 2, 3, 4, 5, 6, 7]. setDT will retain these columns as-is but subsequent operations like grouping and joining may fail. Please consider as.data.table() instead which will create a new column for each embedded column."

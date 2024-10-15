@@ -1,0 +1,1 @@
+"0","data <- as.data.frame(tax_table(ps)) # the table is interactive you can scrol and search thorugh it for details."

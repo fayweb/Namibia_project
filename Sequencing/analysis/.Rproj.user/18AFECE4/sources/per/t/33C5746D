@@ -1,0 +1,27 @@
+{
+    "id": "33C5746D",
+    "path": "~/Documents/LABbook/2024/Namibia_sequencing/analysis/2_pre-processing_new.Rmd",
+    "project_path": "2_pre-processing_new.Rmd",
+    "type": "r_markdown",
+    "hash": "1208508869",
+    "contents": "",
+    "dirty": false,
+    "created": 1722958330353.0,
+    "source_on_save": false,
+    "relative_order": 1,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "27,120",
+        "scrollLine": "17",
+        "last_setup_crc32": ""
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1722959270,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1722959270640,
+    "read_only": false,
+    "read_only_alternatives": []
+}
