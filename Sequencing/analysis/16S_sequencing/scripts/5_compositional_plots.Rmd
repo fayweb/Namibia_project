@@ -70,7 +70,7 @@ knitr::opts_chunk$set(fig.height = 6, fig.width = 9)
 
 Open the  phyloseq 
 ```{r}
-ps <- readRDS("/Users/u_erazo/Documents/LABbook/2024/Namibia_sequencing/analysis/phyobjects/Namibia_samples_decont.rds")
+ps <- readRDS("../phyloseq/Namibia_samples_decont.rds")
 
 ps
 

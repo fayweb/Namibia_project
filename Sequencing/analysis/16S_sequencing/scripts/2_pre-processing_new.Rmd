@@ -25,7 +25,7 @@ library(dplyr) # data handling
 ```{r}
 #load the phylooseq objects
 
-ps <- readRDS("/Users/u_erazo/Documents/LABbook/2024/Namibia_sequencing/analysis/phyobjects/Namibia_samples_decont.rds")
+ps <- readRDS("../phyloseq/Namibia_samples_decont.rds")
 
 ps
 ```
@@ -67,7 +67,7 @@ Let us check for distribution of number of sequences retained after OTU picking 
 p_seqdepth.otu <- plot_read_distribution(ps, "sample_or_control", "density")
 print(p_seqdepth.otu)
 
-tax_table <- as.data.frame.tax_table(ps)
+tax_table <- as.data.frame(tax_table(ps))
 
 ```
 Moving on to distribution of taxa

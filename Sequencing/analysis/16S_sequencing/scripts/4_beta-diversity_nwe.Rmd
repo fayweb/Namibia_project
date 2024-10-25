@@ -56,7 +56,7 @@ colors=c("#E4A365",
 
 Open the  phyloseq 
 ```{r}
-ps <- readRDS("/Users/u_erazo/Documents/LABbook/2024/Namibia_sequencing/analysis/phyobjects/Namibia_samples_decont.rds")
+ps <- readRDS("../phyloseq/Namibia_samples_decont.rds")
 
 ps
 ```
@@ -152,7 +152,7 @@ tax_filter( tax_level = "Genus") %>%
 # create plot
 pca_plot <- p %>%
   ord_plot(
-    axes = 1:2,
+    axes = 2:3,
     plot_taxa = 1:5, colour = "sample_or_control", size = 3,
      tax_vec_length = 0.3, 
     tax_lab_style = tax_lab_style(max_angle = 90, aspect_ratio = 0.5, size = 4),

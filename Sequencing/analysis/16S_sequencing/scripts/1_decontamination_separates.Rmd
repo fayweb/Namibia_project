@@ -23,7 +23,7 @@ library(ggplot2); packageVersion("ggplot2")
 ```
 
 ```{r}
-ps <- readRDS("/Users/u_erazo/Documents/LABbook/2024/Namibia_sequencing/analysis/phyobjects/Namibia_samples.rds")
+ps <- readRDS("../phyloseq/Namibia_samples.rds")
 ps
 ```
 
@@ -155,7 +155,7 @@ ps.noncontam = prune_taxa(allTaxa, ps)
 # new phyloseq object with just the taxa you kept.
 ps.noncontam
 
-saveRDS(ps.noncontam,"/Users/u_erazo/Documents/LABbook/2024/Namibia_sequencing/analysis/phyobjects/Namibia_samples_decont.rds")
+saveRDS(ps.noncontam,"../phyloseq/Namibia_samples_decont.rds")
 
 ```
 

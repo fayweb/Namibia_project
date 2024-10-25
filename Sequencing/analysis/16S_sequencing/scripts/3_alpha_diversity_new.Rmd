@@ -75,7 +75,7 @@ After performing decontamination on the samples based on the frequency according
 
 #load the phylooseq objects
 
-ps1 <- readRDS("/Users/u_erazo/Documents/LABbook/2024/Namibia_sequencing/analysis/phyobjects/Namibia_samples_decont.rds")
+ps1 <- readRDS("../phyloseq/Namibia_samples_decont.rds")
 
 ps1
 ```
@@ -91,7 +91,7 @@ a
 ```
 
 ```{r}
-ggsave (".png",
+ggsave ("../figures/read_distribution.png",
         width=100,
         height=70,
         units="mm",
@@ -117,7 +117,13 @@ p <- vegan::rarecurve(otu_tab,
 
 
 ```
-
+```{r}
+ggsave ("../figures/rarecurve.png",
+        width=100,
+        height=70,
+        units="mm",
+        scale=2)
+```
 
 # I want to check if there are differences in DNA concentration between the samples. This way, I can also see if maybe microbiome differences correlate with the amount of DNA in the samples.
 
@@ -187,7 +193,14 @@ The plot below is only for a quick and dirty check for reads per samples.
  # quick check for sampling depth
 barplot(sample_sums(ps_filter1), las =2)
 ```
- 
+```{r}
+ggsave ("../figures/reads_per_sample.png",
+        width=100,
+        height=70,
+        units="mm",
+        scale=2)
+```
+
 Quick check taxa prevalence.
 ```{r}
 # quick check taxa prevalence
@@ -197,7 +210,13 @@ p.rar <- plot_taxa_prevalence(ps_filter1, "Phylum")
 
 p.rar
 ```
- 
+```{r}
+ggsave ("../figures/taxa_prevalence.png",
+        width=100,
+        height=70,
+        units="mm",
+        scale=2)
+```
 
 
 ```{r include=TRUE}
