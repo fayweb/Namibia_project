@@ -1,8 +1,0 @@
-"0","library(scales)"
-"0",""
-"0","myPal <- tax_palette("
-"0","  data = ps2, rank = ""Species"", n = 25, pal = ""greenArmytage"","
-"0","  add = c(Other = ""white"")"
-"0",")"
-"0","tax_palette_plot(myPal)"
-"0",""

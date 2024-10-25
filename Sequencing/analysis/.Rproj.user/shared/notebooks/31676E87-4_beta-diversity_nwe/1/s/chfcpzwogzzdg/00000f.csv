@@ -1,7 +1,0 @@
-"0","sample_dat_info <- meta(ps)"
-"0",""
-"0","sample_dat_info$temperature <- factor(sample_dat_info$temperature,"
-"0","                                  levels = c(""24"",""28"",""32""),"
-"0","                                  labels=c(""24 °C"",""28 °C"",""32 °C""))"
-"0",""
-"0",""

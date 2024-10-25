@@ -1,6 +1,0 @@
-"0",""
-"0","media_dnaconc <- sample_dat_info %>% "
-"0","group_by(sample_or_control) %>%  # group different replicates with treatments "
-"0","      summarise(median_replicates = median(`conc_16s__PCR`),  #calculate mean of area  of all replicates"
-"0","                sd_area_replicates = sd(`conc_16s__PCR`))"
-"0","    print(media_dnaconc)"

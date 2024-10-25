@@ -1,5 +1,0 @@
-"0",""
-"0","ps.filt <- filter_physeq(ps, min_reads = 500, min_prop = 0.01, min_occurr = 0.0)"
-"0","ps.filt <- add_taxa_info(ps.filt)"
-"2","Error in tmp[, ""Kingdom""] : subscript out of bounds
-"

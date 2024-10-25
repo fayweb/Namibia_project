@@ -1,4 +1,0 @@
-"0","ps2 %>%"
-"0","  comp_barplot(tax_level = ""Species"") +"
-"0","  coord_flip() # horizontal bars are often more readable"
-"0",""

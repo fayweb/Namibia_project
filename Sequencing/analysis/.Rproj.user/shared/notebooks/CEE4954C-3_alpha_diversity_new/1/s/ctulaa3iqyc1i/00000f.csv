@@ -1,2 +1,0 @@
-"0"," # quick check for sampling depth"
-"0","barplot(sample_sums(ps_filter1), las =2)"

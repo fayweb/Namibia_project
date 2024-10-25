@@ -1,3 +1,0 @@
-"0",""
-"0","contamdf.freq <- isContaminant(ps, method=""frequency"", conc=""conc_16s__PCR"")"
-"0","head(contamdf.freq)"

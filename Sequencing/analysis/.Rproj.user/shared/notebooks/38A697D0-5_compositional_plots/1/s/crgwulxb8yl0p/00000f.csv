@@ -1,7 +1,0 @@
-"0",""
-"0","options(width = 100)"
-"0","library(microViz)"
-"0","library(phyloseq)"
-"0","library(ggplot2)"
-"0","library(patchwork) # for arranging groups of plots"
-"0","knitr::opts_chunk$set(fig.height = 6, fig.width = 9)"

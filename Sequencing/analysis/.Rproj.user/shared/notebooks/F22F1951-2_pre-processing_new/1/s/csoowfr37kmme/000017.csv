@@ -1,5 +1,0 @@
-"0",""
-"0","tax_table <- as.data.frame.tax_table(ps)"
-"2","Error in as.data.frame.tax_table(ps) : 
-  could not find function ""as.data.frame.tax_table""
-"

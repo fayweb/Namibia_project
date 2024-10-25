@@ -1,8 +1,0 @@
-"0","library(microbiome) # data analysis and visualisation"
-"0","library(phyloseq) # also the basis of data object. Data analysis and visualisation"
-"0","library(microbiomeutilities) # some utility tools"
-"0","library(RColorBrewer) # nice color options"
-"0","library(ggpubr) # publication quality figures, based on ggplot2"
-"0","library(DT) # interactive tables in html and markdown"
-"0","library(data.table) # alternative to data.frame"
-"0","library(dplyr) # data handling"

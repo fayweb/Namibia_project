@@ -1,5 +1,0 @@
-"0","ps0_tax_plot <- ggplot(ps0_df_taxa, aes(ASVabundance)) +"
-"0","  geom_histogram() + ggtitle(""Histogram of counts"") +"
-"0","  theme_bw() + scale_x_log10() + ylab(""Frequency of Counts"") + xlab(""Abundance (raw counts)"")"
-"0",""
-"0","print(ps0_tax_plot)"

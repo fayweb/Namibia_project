@@ -1,6 +1,0 @@
-"0",""
-"0","set.seed(100)"
-"0",""
-"0","# Genera las gráficas de frecuencia para cada una de las muestras"
-"0","plot_frequency(ps, taxa_names(ps)[sample(which(contamdf.freq$contaminant), 2)], conc=""conc_16s__PCR"") +"
-"0","    xlab(""DNA Concentration (ng/ul)"")"
