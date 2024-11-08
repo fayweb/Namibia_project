@@ -191,7 +191,7 @@ plot_read_distribution(ps_filter0 , groups = "sample_or_control", plot.type = "d
 The plot below is only for a quick and dirty check for reads per samples.
 ```{r}
  # quick check for sampling depth
-barplot(sample_sums(ps_filter1), las =2)
+barplot(sample_sums(ps1), las =2)
 ```
 ```{r}
 ggsave ("../figures/reads_per_sample.png",
