@@ -59,14 +59,14 @@ knitr::opts_chunk$set(fig.height = 6, fig.width = 9)
 ```
 Open the  phyloseq 
 ```{r}
-ps <- readRDS("/Users/u_erazo/Documents/LABbook/2023/E1_23_Larvae_Temperature_Microbiome/scr/EMU/all/clean_data/code/Exp.4_5_6/20240725_decont_Exp4_5_6_clean.rds")
+ps <- readRDS("../phyloseq/Namibia_samples_decont.rds")
 
 ps
 ```
 
 Filter the data by reads 
 ```{r}
-ps2 = prune_samples(sample_sums(ps)>=500, ps)
+ps2 = prune_samples(sample_sums(ps)>=200, ps)
 ps2
 
 ```
@@ -81,59 +81,14 @@ psq1 <- tax_filter(ps2, min_prevalence = 5)
 rank_names(psq1)
 ```
 
-I will filter the phyloseq object to see differences between larvae and water at different temperatures
 
-```{r}
-library(phyloseq)
-# filter_ps1_exp3<- subset_samples(ps, repeat. != "Exp.3")
-# filter_ps1_exp3_4 <- subset_samples(filter_ps1_exp3, repeat. != "Exp.4")
-
-control.data <- subset_samples(psq1, sample_or_control == "control")
-
-sam.dat <- subset_samples(psq1, sample_or_control == "sample")
-sam.data <- subset_samples(sam.dat, sample_type != "PCR_zymo")
-
-# filter the phyloseq data
-sam.data.filt <- filter_physeq(sam.data, min_reads = 500, min_prop = 0.01, min_occurr = 0.0)
-sam.data.filt <- add_taxa_info(sam.data.filt)
-
-larvae.water.da <- subset_samples(sam.data.filt, sample_type != "water_control")
-larvae.water.dat <- subset_samples(larvae.water.da, sample_type != "water_food_control")
-larvae.water.data <- subset_samples(larvae.water.dat, sample_type != "water_control")
-
-larvae.data <- subset_samples(larvae.water.data, sample_type == "larvae")
-water.data <- subset_samples(larvae.water.data, sample_type == "water")
-
-waters.data <- subset_samples(sam.data.filt, sample_type != "larvae")
-
-
-#For control I visulized the tables with the sample_data of each filter phyloseq object
-larvae.data.meta <- meta(larvae.data)
-water.data.meta <- meta(water.data)
-control.data.meta <- meta(control.data)
-sam.data.meta <- meta(sam.data.filt)
-larvae.water.data.meta <- meta(larvae.water.data)
-waters.data.meta <- meta(waters.data)
-```
-
-*heatmap_larvae*
-
-```{r}
-
-
-temp_colors <- list("temperature" = c(
-  "32" = "#BF6866", "28" = "#E4A365", "24" = "#00A1D5"
-))
-
-
-```
 
 Helper to specify heatmap annotation for showing taxa prevalence as barplot and the taxa abundance on boxplot
 ```{r}
 library("ComplexHeatmap")
 
 #prevalence
-psq <- larvae.data 
+psq <- ps 
 
 psq <- tax_filter(psq, min_prevalence = 5)
 psq <- tax_mutate(psq, Species = NULL)
@@ -155,7 +110,7 @@ draw(heatmapAnnoFunction)
 
 #Abundance
 
-psq <- larvae.data 
+psq <- ps 
 psq <- tax_filter(psq, min_prevalence = 5)
 psq <- tax_mutate(psq, Species = NULL)
 psq <- tax_fix(psq)
@@ -173,103 +128,20 @@ draw(heatmapAnnoFunction)
 
 ```
 
+
+
 ```{r}
+psq2 <- tax_transform(psq, "compositional", rank = "Genus")
 
-     ?dplyr::mutate 
-
-psq <- larvae.data %>%
-  ps_mutate(
-    as.character(temperature) == as.character(temperature),
-    temp = recode(temperature, "32" = 3, "28" = 2, "24" = 1),
-    exp =  recode(repeat., Exp.4 = 4, Exp.5 = 5, Exp.6 = 6))
-
-
-taxAnno <- taxAnnotation(
-  Prv. = fun1, Abd. = fun2
+best_heatmap <- comp_heatmap(
+  data = psq2, 
+  taxa = taxa[1:20], 
+  tax_anno = taxAnnotation(Prev = anno_tax_prev(undetected = 50))
 )
 
-class(taxAnno) # "function"
-#> [1] "function"
-```
-
-
-```{r}
-library(dplyr)
-# Define a color palette for the temperature categories
-temperature_colors <- c("1" = "#00A1D5", "2" = "#E4A365", "3" = "#BF6866")
-
-psq2 <-  tax_transform(psq,"compositional", rank = "Genus")
-
-best_heatmap <- comp_heatmap(data = psq2, taxa = taxa[1:20], 
-              tax_anno = taxAnnotation(Prev = anno_tax_prev(undetected = 50)),
-             sample_anno = sampleAnnotation(
-      Temperature = anno_sample_cat("temp", col = temperature_colors, legend_title = "Temperature")
-))
-best_heatmap
-
-best_heatmap_larvae <- ComplexHeatmap::draw(
-  object = best_heatmap,
-  annotation_legend_list = attr(best_heatmap, "AnnoLegends"), merge_legends = TRUE
+best_heatmap_2<- ComplexHeatmap::draw(
+  object = best_heatmap
 )
 
-best_heatmap_larvae
+best_heatmap_2
 ```
-```{r}
-jpeg(filename = "/Users/u_erazo/Documents/LABbook/2023/E1_23_Larvae_Temperature_Microbiome/scr/EMU/all/clean_data/figures_without_exp3and4/larvae/larvaeheatmap_temp_abund_prev2.jpg",  width = 800, height = 600, quality = 95, res = 150)
-```
-
-
-```{r}
-ComplexHeatmap::draw(
-  object = best_heatmap_larvae,
-  annotation_legend_list = attr(best_heatmap, "AnnoLegends"), merge_legends = TRUE
-)
-
-dev.off()
-```
-```{r}
-cols <- temperature_colors
-names(cols) <- unique(samdat_tbl(psq)$temperature)
-
-psq %>%
-  # sort all samples by similarity
-  ps_seriate(rank = "Genus", tax_transform = "compositional", dist = "bray") %>% 
-  # arrange the samples into Disease State groups
-  ps_arrange(temp) %>% 
-  tax_transform("compositional", rank = "Genus") %>%
-  comp_heatmap( 
-    tax_anno = taxAnnotation(
-      Prev. = anno_tax_prev(bar_width = 0.3, size = grid::unit(1, "cm"))
-    ),
-   sample_anno = sampleAnnotation(
-      Temperature = anno_sample_cat("temp", col = temperature_colors, legend_title = "Temperature")
-   
-  ))
-
-```
-
-
-
-****Microbe-to-sample-data correlation heatmap****
-
-```{r}
-library(dplyr)
-
-psq1 <- tax_agg(psq, "Genus")
-
-# randomly select 20 taxa from the 50 most abundant taxa
-set.seed(123)
-taxa <- sample(tax_top(psq1, n = 20), size = 20)
-
-# NOTE: detection threshold set to 50 as HITchip example data seems to have background noise
-ud <- 50
-
-# make simple correlation heatmap with all numeric-like variables
-cor_heatmap(
-  data = psq1, taxa = taxa,
-    vars = c("temp"), tax_anno = taxAnno,
-  colors = heat_palette("Green-Orange", rev = TRUE, sym = TRUE)
-)
-
-```
-

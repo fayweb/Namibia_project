@@ -129,9 +129,9 @@ print(length(reads_per_otu[reads_per_otu < 10]))
 ```{r}
 print(sum(reads_per_otu[reads_per_otu < 10]))
 ```
-To put this into context; out of the 62624 OTUs, 308 OTUs contain less than 10 reads, which is:
+To put this into context; out of the 63611 OTUs, 308 OTUs contain less than 10 reads, which is:
 ```{r}
-print((308/62624)*100)
+print((305/62461)*100)
 ```
 
 Let us see how many singletons are there?
@@ -150,7 +150,7 @@ length(which(taxa_sums(ps0.1.otu) <= 2))
 
 Singletons and doubletons
 ```{r}
-round((224/62624)*100, digits = 2)
+round((224/62461)*100, digits = 2)
 ```
 
 

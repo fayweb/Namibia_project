@@ -80,6 +80,9 @@ ps1 <- readRDS("../phyloseq/Namibia_samples_decont.rds")
 ps1
 ```
 
+```{r}
+ps1   <- prune_taxa(taxa_sums(ps1) > 0, ps1)
+```
 
 ```{r}
 summary(sample_sums(ps1))
@@ -103,20 +106,67 @@ sample_dat_info <- meta(ps1)
 sample_dat_info$sdt <- sample_sums(ps1)
 ```
 
-
+```{r}
+color_sample_type =c("sample"="black",
+                     "control"="red"
+                    )
+```
 
 As is evident there is a large difference in the number of reads. Minimum is 3 and maximum is 66186!! There is a 22062X difference!
 
 We can plot the rarefaction curve for the observed ASVs in the entire data set. This is a way to check how has the richness captured in the sequencing effort.
 ```{r}
-otu_tab <- t(abundances(ps1))
-p <- vegan::rarecurve(otu_tab, 
-                      step = 50, label = FALSE, 
-                      sample = min(rowSums(otu_tab), 
-                                   col = "blue", cex = 0.6))
 
+# Create a function to filter samples, clean data, and plot rarefaction curves
+plot_rarefaction_with_filter <- function(physeq_obj, min_sum = 10) {
+  # Extract the abundance table and metadata
+  otu_tab <- t(abundances(physeq_obj))  # Extract the transposed abundance table
+  metadata <- as.data.frame(sample_data(physeq_obj))  # Extract the metadata
+  
+  # Convert non-numeric values to NA and then replace with 0
+  otu_tab <- as.data.frame(otu_tab)  # Ensure it's a data frame
+  otu_tab[] <- lapply(otu_tab, function(x) as.numeric(as.character(x)))  # Convert everything to numeric
+  otu_tab[is.na(otu_tab)] <- 0  # Replace NAs with 0
+  
+  # Filter samples with read sums >= min_sum
+  otu_tab <- otu_tab[rowSums(otu_tab) >= min_sum, ]
+  
+  # Check that the `metadata` still has rows after filtering
+  metadata <- metadata[rownames(otu_tab), ]
+  
+  # Verify if there are enough samples after filtering to create the curve
+  if (nrow(otu_tab) < 2) {
+    warning("Not enough samples after filtering. Try lowering the min_sum value.")
+    return(NULL)
+  }
+  
+  # Define colors for sample/control
+  
+  color_sample_type <- color_sample_type[metadata$sample_or_control]
+  
+   # Extract the object name for the title
+  physeq_name <- deparse(substitute(physeq_obj))
+  
+  # Print a verification of the number of samples after filtering
+  print(paste("Number of samples after filtering:", nrow(otu_tab)))
+  
+  # Plot the rarefaction curve
+  plot_title <- paste("Rarefaction Curve -", physeq_name)  # Add the object name as the title
+  # Generate the rarefaction curve
+  vegan::rarecurve(otu_tab,
+                   step = 50,
+                   label = TRUE,
+                   sample = min(rowSums(otu_tab)),
+                   col = color_sample_type,
+                   cex = 0.6,
+                   main = plot_title)  # Add title to the plot
+                   
+}
 
+# Apply the function to each phyloseq object
+plot_rarefaction_with_filter(ps1)
 ```
+
 ```{r}
 ggsave ("../figures/rarecurve.png",
         width=100,
@@ -162,7 +212,6 @@ ggsave (".../ll.png",
 ```
 
 
-The p-value of the test is 0.00103, which is less than the significance level alpha = 0.05. We can conclude that sdt and conc_16s__PCR are significantly correlated with a correlation coefficient of -0.17 and p-value of  0.00103 .
 
 
 ```{r}

@@ -82,6 +82,6 @@ physeq@otu_table <- new_otu_table
 print(physeq)
 
 
-# saveRDS(physeq,"../phyloseq/Namibia_samples.rds")
+ saveRDS(physeq,"../phyloseq/Namibia_samples.rds")
 
 ```
