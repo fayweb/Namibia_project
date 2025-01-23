@@ -153,7 +153,7 @@ plot_rarefaction_with_filter <- function(physeq_obj, min_sum = 10) {
   # Plot the rarefaction curve
   plot_title <- paste("Rarefaction Curve -", physeq_name)  # Add the object name as the title
   # Generate the rarefaction curve
-  vegan::rarecurve(otu_tab,
+   vegan::rarecurve(otu_tab,
                    step = 50,
                    label = TRUE,
                    sample = min(rowSums(otu_tab)),
@@ -164,8 +164,84 @@ plot_rarefaction_with_filter <- function(physeq_obj, min_sum = 10) {
 }
 
 # Apply the function to each phyloseq object
-plot_rarefaction_with_filter(ps1)
+ plot_rarefaction_with_filter(ps1)
+ 
+ write_csv(p, "rarefractiocurve.csv")
+
 ```
+
+```{r}
+# Cargar las librerías necesarias
+library(vegan)
+library(readr)
+
+# Modificar la función para guardar los datos de la curva de rarefacción
+plot_rarefaction_with_filter <- function(physeq_obj, min_sum = 10, output_csv = "rarefaction_data.csv") {
+  # Extract the abundance table and metadata
+  otu_tab <- t(abundances(physeq_obj))  # Extract the transposed abundance table
+  metadata <- as.data.frame(sample_data(physeq_obj))  # Extract the metadata
+  
+  # Convert non-numeric values to NA and then replace with 0
+  otu_tab <- as.data.frame(otu_tab)  # Ensure it's a data frame
+  otu_tab[] <- lapply(otu_tab, function(x) as.numeric(as.character(x)))  # Convert everything to numeric
+  otu_tab[is.na(otu_tab)] <- 0  # Replace NAs with 0
+  
+  # Filter samples with read sums >= min_sum
+  otu_tab <- otu_tab[rowSums(otu_tab) >= min_sum, ]
+  
+  # Check that the `metadata` still has rows after filtering
+  metadata <- metadata[rownames(otu_tab), ]
+  
+  # Verify if there are enough samples after filtering to create the curve
+  if (nrow(otu_tab) < 2) {
+    warning("Not enough samples after filtering. Try lowering the min_sum value.")
+    return(NULL)
+  }
+  
+  # Define colors for sample/control
+  color_sample_type <- rainbow(nrow(otu_tab))  # Assign unique colors for each sample
+  
+  # Print a verification of the number of samples after filtering
+  print(paste("Number of samples after filtering:", nrow(otu_tab)))
+  
+  # Generate rarefaction data
+  rarefaction_data <- vegan::rarecurve(
+    otu_tab, 
+    step = 50, 
+    sample = min(rowSums(otu_tab)), 
+    label = FALSE
+  )
+  
+  # Combine rarefaction data into a single data frame
+  rarefaction_table <- do.call(rbind, lapply(rarefaction_data, function(x) {
+    data.frame(
+      Sample = rep(names(x), each = length(x)),
+      Reads = as.numeric(names(x)),
+      Richness = as.numeric(x)
+    )
+  }))
+  
+  # Save the rarefaction table to a CSV file
+  write_csv(rarefaction_table, "../figures/routput_csv")
+  
+  # Plot the rarefaction curve
+  plot_title <- paste("Rarefaction Curve -", deparse(substitute(physeq_obj)))  # Add the object name as the title
+  vegan::rarecurve(otu_tab,
+                   step = 50,
+                   label = TRUE,
+                   sample = min(rowSums(otu_tab)),
+                   col = color_sample_type,
+                   cex = 0.6,
+                   main = plot_title)  # Add title to the plot
+  
+  print(paste("Rarefaction data saved to:", output_csv))
+}
+
+# Aplicar la función y guardar los datos
+plot_rarefaction_with_filter(ps1, min_sum = 10, output_csv = "rarefaction_data.csv")
+
+```
+
 
 ```{r}
 ggsave ("../figures/rarecurve.png",
