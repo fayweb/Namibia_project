@@ -43,6 +43,12 @@ summarize_phyloseq(ps)
 ps
 ```
 
+sample_sums
+```{r}
+ ?sample_sums
+p <- barplot(sample_sums(ps))
+```
+
 Variablity
 
 We will check the spread of variation for taxa identifed. Coefficient of variation (C.V), i.e. sd(x)/mean(x) is a widely used approach to measure heterogeneity in OTU/ASV abundance data. The plot below shows CV-mean(relaive mean abundance) relationship in the scatter plot, where variation is calculated for each OTU/ASV across samples versus mean relative abundance.
