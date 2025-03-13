@@ -369,11 +369,40 @@ do
 done
 ```
 
-### 4.3 Copying Outputs for Further Analysis
+###  4.3 Combine outputs
+
+In the server: 
+
+```bash
+
+#activate the conda enviroment
+
+source /u/merazo/miniconda3/bin/activate EMU
+
+emu combine-outputs /ptmp/merazo/Namibia16s/output/EMU/Melanie/ tax_id --counts --split-tables
+
+emu combine-outputs /ptmp/merazo/Namibia16s/output/EMU/stardard/ tax_id --counts --split-tables
+```
+
+rsync -PavH raven:/ptmp/merazo/Namibia16s/output/EMU/Melanie/emu-combined-abundance-tax_id-counts.tsv /Users/u_erazo/Documents/LABbook/2024/Namibia_sequencing/dorado_0_9_1/EMU_output/Melanie/combine_outputs
+
+rsync -PavH raven:/ptmp/merazo/Namibia16s/output/EMU/Melanie/emu-combined-taxonomy-tax_id.tsv /Users/u_erazo/Documents/LABbook/2024/Namibia_sequencing/dorado_0_9_1/EMU_output/Melanie/combine_outputs
+
+
+rsync -PavH raven:/ptmp/merazo/Namibia16s/output/EMU/stardard/emu-combined-abundance-tax_id-counts.tsv /Users/u_erazo/Documents/LABbook/2024/Namibia_sequencing/dorado_0_9_1/EMU_output/stardard/combine_outputs_standard
+
+rsync -PavH raven:/ptmp/merazo/Namibia16s/output/EMU/stardard/emu-combined-taxonomy-tax_id.tsv /Users/u_erazo/Documents/LABbook/2024/Namibia_sequencing/dorado_0_9_1/EMU_output/stardard/combine_outputs_standard
+
+
+
+
+### 4.4 Copying Outputs for Further Analysis
 
 Copy the EMU outputs to your local machine:
 
 ```bash
 rsync -PavH raven:/ptmp/merazo/Namibia16s/output/EMU/ /Users/u_erazo/Documents/LABbook/2024/Namibia_sequencing/dorado_0_9_1/
 ```
+
+
 
