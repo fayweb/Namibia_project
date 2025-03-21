@@ -26,7 +26,8 @@ pacman::p_load(
   tidyverse, janitor, readr, lubridate, ggplot2, phyloseq, vegan,
   corrplot, patchwork, ggrepel, RColorBrewer, pheatmap, caret,
   randomForest, rfUtilities, optimx, ggpubr, FactoMineR, factoextra,
-  leaflet, kableExtra, broom, magrittr, data.table
+  leaflet, kableExtra, broom, magrittr, data.table, sf, rnaturalearth,
+  RColorBrewer, tmap, mapview, cowplot, magick
 )
 
 # ***********************************************************
@@ -39,6 +40,7 @@ project_root <- here::here()
 # Define primary directories
 data_dir       <- file.path(project_root, "data")
 raw_data       <- file.path(data_dir, "raw")
+  field_raw_tracking <- file.path(raw_data, "Field_tracking_data")
 processed_data <- file.path(data_dir, "processed")
 metadata_dir   <- file.path(data_dir, "metadata")
 results_dir    <- file.path(project_root, "results")
@@ -54,7 +56,7 @@ scripts_dir    <- file.path(project_root, "scripts")
 # 3.1: Import & Clean Rodent Field Data
 #----------------------------------------------------------*
 message("\n🔹 Step 3.1: Cleaning rodent field data...")
-source(file.path(scripts_dir, "preprocessing", "01_clean_field_data.R"))
+source(file.path(scripts_dir, "preprocessing", "import_clean_field_data.R"))
 
 #----------------------------------------------------------*
 # 3.2: Process Nanodrop & Sample Metadata
@@ -81,36 +83,55 @@ source(file.path(scripts_dir, "preprocessing", "02_process_metadata.R"))
 # ***********************************************************
 # Part 5: Generate Figures & Reports ----
 # ***********************************************************
-
 #----------------------------------------------------------*
 # 5.1: Generate Species Distribution Plots
 #----------------------------------------------------------*
-#message("\n🔹 Step 5.1: Generating species distribution plots...")
-#source(file.path(scripts_dir, "visualization", "05_species_distribution.R"))
+message("\n🔹 Step 5.1: Generating species distribution plots...")
+source(file.path(scripts_dir, "visualization", "05_species_distribution.R"))
 
 #----------------------------------------------------------*
 # 5.2: Generate Geographical Mapping
 #----------------------------------------------------------*
-#message("\n🔹 Step 5.2: Mapping species distributions...")
-#source(file.path(scripts_dir, "visualization", "05_geographical_mapping.R"))
+message("\n🔹 Step 5.2: Mapping species distributions...")
+source(file.path(scripts_dir, "visualization", "05_geographical_mapping.R"))
 
 #----------------------------------------------------------*
 # 5.3: Analyze Sex & Age Distribution
 #----------------------------------------------------------*
-#message("\n🔹 Step 5.3: Analyzing sex & age distribution...")
-#source(file.path(scripts_dir, "visualization", "05_sex_age_analysis.R"))
+message("\n🔹 Step 5.3: Analyzing sex & age distribution...")
+source(file.path(scripts_dir, "visualization", "05_sex_age_analysis.R"))
+# ----------------------------------------------------------*
+# 5.4: Habitat Distribution Analysis
+# ----------------------------------------------------------*
+message("\n🔹 Step 5.4: Analyzing species distribution by habitat...")
+source(file.path(scripts_dir, "visualization", "05_habitat_distribution.R"))
 
-#----------------------------------------------------------*
-# 5.4: Weight Distribution Across Species
-#----------------------------------------------------------*
-#message("\n🔹 Step 5.4: Analyzing weight distribution...")
-#source(file.path(scripts_dir, "visualization", "05_weight_distribution.R"))
+# ----------------------------------------------------------*
+# 5.5: Temporal Patterns Analysis
+# ----------------------------------------------------------*
+message("\n🔹 Step 5.5: Analyzing temporal patterns of species occurrences...")
+source(file.path(scripts_dir, "visualization", "05_temporal_patterns.R"))
 
-#----------------------------------------------------------*
-# 5.5: Correlations Between Variables
-#----------------------------------------------------------*
-#message("\n🔹 Step 5.5: Analyzing relationships between variables...")
-#source(file.path(scripts_dir, "visualization", "05_variable_relationships.R"))
+# ----------------------------------------------------------*
+# 5.6: Weight Distribution Analysis
+# ----------------------------------------------------------*
+message("\n🔹 Step 5.6: Analyzing weight distribution across species...")
+source(file.path(scripts_dir, "visualization", "05_weight_distribution.R"))
+
+# ----------------------------------------------------------*
+# 5.7: Variable Relationships (Geographical Scatter Plot)
+# ----------------------------------------------------------*
+message("\n🔹 Step 5.7: Analyzing relationships between species and geographical coordinates...")
+source(file.path(scripts_dir, "visualization", "05_variable_relationships.R"))
+
+# ----------------------------------------------------------*
+# 5.8: Site Panel Figures (Map Combos)
+# ----------------------------------------------------------*
+message("\n🔹 Step 5.8: Creating panel plots for site locations...")
+source(file.path(scripts_dir, "visualization", "05_site_panels.R"))
+
+
+
 
 # ***********************************************************
 # Part 6: Save Final Processed Data ----
