@@ -27,7 +27,7 @@ pacman::p_load(
   corrplot, patchwork, ggrepel, RColorBrewer, pheatmap, caret,
   randomForest, rfUtilities, optimx, ggpubr, FactoMineR, factoextra,
   leaflet, kableExtra, broom, magrittr, data.table, sf, rnaturalearth,
-  RColorBrewer, tmap, mapview, cowplot, magick
+  RColorBrewer, tmap, mapview, cowplot, magick, readxl
 )
 
 # ***********************************************************
@@ -56,13 +56,20 @@ scripts_dir    <- file.path(project_root, "scripts")
 # 3.1: Import & Clean Rodent Field Data
 #----------------------------------------------------------*
 message("\n🔹 Step 3.1: Cleaning rodent field data...")
-source(file.path(scripts_dir, "preprocessing", "import_clean_field_data.R"))
+source(file.path(scripts_dir, "preprocessing", "1_import_clean_field_data.R"))
 
 #----------------------------------------------------------*
-# 3.2: Process Nanodrop & Sample Metadata
+# 3.1a: Nanodrop DNA Quality Assessment in the Field
 #----------------------------------------------------------*
-message("\n🔹 Step 3.2: Processing sample metadata...")
-source(file.path(scripts_dir, "preprocessing", "02_process_metadata.R"))
+#message("\n🔹 Step 3.1a: Archiving early Nanodrop DNA QC (field)...")
+#source(file.path(scripts_dir, "preprocessing", "01a_nanodrop_field_qc.R"))
+#----------------------------------------------------------*
+# 3.3: AMPure Cleanup QC (Marly)
+#----------------------------------------------------------*
+#message("\n🔹 Step 3.3: Processing DNA cleanup QC from AMPure protocol...")
+#source(file.path(scripts_dir, "preprocessing", "03_dna_cleaning_qc_marly.R"))
+
+
 
 # ***********************************************************
 # Part 4: Taxonomic Processing - OTU & Phylogenetic Analysis ----
