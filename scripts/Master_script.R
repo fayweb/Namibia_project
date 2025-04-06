@@ -28,7 +28,16 @@
 # Outputs used in R:
 #   ▸ data/raw/ont_fastq/
 #   ▸ data/processed/ont_emu_abundance/
+
 # ***********************************************************
+# Additional Slurm script used for Dorado basecalling on MPCDF:
+#   ▸ Scripts/Basecalling/dorado_basecall_mpcdf.slurm
+#
+# This batch script includes:
+#   - Module loading (CUDA)
+#   - Dorado basecalling with `--min-qscore 10`
+#   - Generation of BAM and summary stats
+#   - Demultiplexing with EXP-PBC096 kit
 
 # ***********************************************************
 # Part 1: Set Standard Settings & Load Libraries ----
