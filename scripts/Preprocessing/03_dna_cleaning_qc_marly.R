@@ -4,34 +4,40 @@
 # Author: Marly Erazo
 # ***********************************************************
 
-# Create directory for results
-dir.create("results/figures/dna_cleaning", recursive = TRUE, showWarnings = FALSE)
+raw <- read_excel("data/raw/20241125_marly_extra_DNA_cleaning_roedeanst_DNA.xlsx",
+                  sheet = "Plate_set-up DNA Plate16s r",
+                  skip = 1)  # Skip the description row
 
-# Read data
-raw <- read_excel("Data/raw/20241125_marly_extra_DNA_cleaning_roedeanst_DNA.xlsx",
-                  sheet = "Plate_set-up DNA Plate16s r", skip = 1)
 
-# Rename relevant columns manually
-names(raw)[c(0:3, 10, 11, 17, 18, 19, 20, 21, 22, 23, 24)] <- c(
-  "Sample_ID", "Well", "Qubit_ng_ul_pre", "Condition",
-  "Nanodrop_ng_ul_pre", "A260_pre", "Qubit_ng_ul_post",
-  "Nanodrop_ng_ul_post", "Nanodrop_unit_post", "A260_post",
-  "A280_post", "Ratio_260_280_post", "Ratio_260_230_post"
+# Rename the useful columns based on the real headers
+colnames(raw)[c(1, 2, 3, 10, 11, 17, 18, 19, 20, 21, 22, 23)] <- c(
+  "Sample_ID", "Well", "Qubit_ng_ul_pre", "Nanodrop_ng_ul_pre", "A260_pre",
+  "Qubit_ng_ul_post", "Nanodrop_ng_ul_post", "Nanodrop_unit_post",
+  "A260_post", "A280_post", "Ratio_260_280_post", "Ratio_260_230_post"
 )
 
-# Select and tidy
 df_cleaning <- raw %>%
-  select(Sample_ID, Well, Qubit_ng_ul_pre, Nanodrop_ng_ul_pre,
-         Qubit_ng_ul_post, Nanodrop_ng_ul_post,
-         A260_post, A280_post, Ratio_260_280_post, Ratio_260_230_post) %>%
-  filter(!is.na(Sample_ID)) %>%
-  mutate(across(where(is.character), ~ trimws(.))) %>%
-  mutate(across(contains("Qubit"), as.numeric)) %>%
-  mutate(across(starts_with("Ratio"), as.numeric))
+  select(
+    Sample_ID            = `Collection...1`,
+    Well                 = `well...2`,
+    Qubit_ng_ul_pre      = `Qubit (ng/µl) DNA conc. original sample`,
+    Nanodrop_ng_ul_pre   = `Nanodrop original sample`,
+    Qubit_ng_ul_post     = `Qubit (ng/µl) after cleaning with the AMPure beas (15ul of sample and 15 ul of beads, elution in 30ul DNAse free water)`,
+    Nanodrop_ng_ul_post  = `Nanodrop after cleaning with the AMPure beas (15ul of sample and 15 ul of beads, elution in 30ul DNAse free water)`,
+    A260_post            = `A260...22`,
+    A280_post            = `A280...23`,
+    Ratio_260_280_post   = `260/280...24`,
+    Ratio_260_230_post   = `260/230...25`
+  )
 
-# Save tidy CSV
+df_cleaning <- df_cleaning %>%
+  mutate(across(where(is.character) & !c(Sample_ID, Well), as.numeric)) %>%  # catch stray character columns
+  mutate(across(c(Qubit_ng_ul_pre), as.numeric))  #_
+
+
+
 write_csv(df_cleaning, "data/processed/dna_cleanup_marly_2023.csv")
-message("✅ Cleaned DNA cleanup log saved to: data/processed/dna_cleanup_marly_2023.csv")
+message("✅ Cleaned DNA cleanup log saved.")
 
 # Plot Qubit pre vs post
 p1 <- ggplot(df_cleaning, aes(x = Qubit_ng_ul_pre, y = Qubit_ng_ul_post)) +
