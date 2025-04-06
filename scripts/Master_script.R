@@ -6,38 +6,54 @@
 # Authors: Fay Webster, Marly Erazo, Otto Netzel, Lilla Jordan,
 #          Emanuel Heitlinger, Conor Noonan, Dong Xia, Melanie Hay
 #
-# Date: 2024-10-15
-# ***********************************************************
-# ***********************************************************
-# Note: 16S Nanopore Sequencing Preprocessing (Shell-based)
-#
-# The raw 16S MinION data were preprocessed outside of R using
-# a pipeline built from ONT's Dorado and EMU tools on the HPC.
-#
-# Steps:
-#   - Basecalling (Dorado)
-#   - Length filtering (1400–1800 bp)
-#   - Demultiplexing (Dorado demux)
-#   - Quality control (NanoPlot, samtools stats)
-#   - Read count summaries
-#   - Taxonomic assignment (EMU)
-#
-# Full protocols and bash commands are described here:
-#   ▸ Namibia_project/Protocols/Data_processing/README_16s_data_preprocessing.pdf
-#
-# Outputs used in R:
-#   ▸ data/raw/ont_fastq/
-#   ▸ data/processed/ont_emu_abundance/
 
 # ***********************************************************
-# Additional Slurm script used for Dorado basecalling on MPCDF:
-#   ▸ Scripts/Basecalling/dorado_basecall_mpcdf.slurm
+# ***********************************************************
+# ***********************************************************
+# Part 0: 16S Nanopore Preprocessing (External HPC Pipeline)
+# ***********************************************************
+# Note: The raw 16S Nanopore data were preprocessed outside of R
+#       using a shell-based pipeline executed on the MPCDF cluster.
 #
-# This batch script includes:
-#   - Module loading (CUDA)
-#   - Dorado basecalling with `--min-qscore 10`
-#   - Generation of BAM and summary stats
-#   - Demultiplexing with EXP-PBC096 kit
+# 🧪 Step 0.1: Basecalling & Demultiplexing (Dorado)
+# --------------------------------------------------
+# Tool: ONT Dorado
+# Script: Scripts/Basecalling/dorado_basecall_mpcdf.slurm
+#
+# Key components:
+#   - CUDA module loaded via `module load cuda/11.4`
+#   - Basecalling with `--min-qscore 10`
+#   - Outputs: BAM files and summary stats
+#   - Demultiplexing using `--kit-name EXP-PBC096`
+#
+# 📂 Outputs:
+#   - Basecalled reads:         data/raw/ont_fastq/
+#   - Summary & BAM:            data/raw/ont_fastq/*.bam, *.txt
+
+# 🧬 Step 0.2: Quality Filtering & Length Trimming
+# --------------------------------------------------
+# Filtering performed for full-length 16S reads (1400–1800 bp).
+# Quality control and stats generated via:
+#   - NanoPlot
+#   - samtools stats
+
+# 🧬 Step 0.3: Taxonomic Classification (EMU)
+# --------------------------------------------------
+# Tool: EMU (Exact Mapping of 16S reads)
+# Script: Scripts/Basecalling/emu_script.slurm
+#
+# Key components:
+#   - Conda environment activation (`EMU`)
+#   - Looping over demultiplexed FASTQ files
+#   - Running `emu abundance` with the SILVA database
+#
+# 📂 Outputs:
+#   - Taxonomic abundance tables: data/processed/ont_emu_abundance/
+#   - One `.tsv` file per sample with tax_id counts and relative abundances
+
+# 📄 Documentation:
+#   - Full pipeline details, filtering criteria, and HPC command logs:
+#     ▸ Protocols/Data_processing/README_16s_data_preprocessing.pdf
 
 # ***********************************************************
 # Part 1: Set Standard Settings & Load Libraries ----
