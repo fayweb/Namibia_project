@@ -8,6 +8,27 @@
 #
 # Date: 2024-10-15
 # ***********************************************************
+# ***********************************************************
+# Note: 16S Nanopore Sequencing Preprocessing (Shell-based)
+#
+# The raw 16S MinION data were preprocessed outside of R using
+# a pipeline built from ONT's Dorado and EMU tools on the HPC.
+#
+# Steps:
+#   - Basecalling (Dorado)
+#   - Length filtering (1400–1800 bp)
+#   - Demultiplexing (Dorado demux)
+#   - Quality control (NanoPlot, samtools stats)
+#   - Read count summaries
+#   - Taxonomic assignment (EMU)
+#
+# Full protocols and bash commands are described here:
+#   ▸ Namibia_project/Protocols/Data_processing/README_16s_data_preprocessing.pdf
+#
+# Outputs used in R:
+#   ▸ data/raw/ont_fastq/
+#   ▸ data/processed/ont_emu_abundance/
+# ***********************************************************
 
 # ***********************************************************
 # Part 1: Set Standard Settings & Load Libraries ----
@@ -66,8 +87,8 @@ source(file.path(scripts_dir, "preprocessing", "1_import_clean_field_data.R"))
 #----------------------------------------------------------*
 # 3.3: AMPure Cleanup QC (Marly)
 #----------------------------------------------------------*
-#message("\n🔹 Step 3.3: Processing DNA cleanup QC from AMPure protocol...")
-#source(file.path(scripts_dir, "preprocessing", "03_dna_cleaning_qc_marly.R"))
+message("\n🔹 Step 3.3: Processing DNA cleanup QC from AMPure protocol...")
+source(file.path(scripts_dir, "preprocessing", "03_dna_cleaning_qc_marly.R"))
 
 
 

@@ -17,23 +17,19 @@ colnames(raw)[c(1, 2, 3, 10, 11, 17, 18, 19, 20, 21, 22, 23)] <- c(
 )
 
 df_cleaning <- raw %>%
-  select(
-    Sample_ID            = `Collection...1`,
-    Well                 = `well...2`,
-    Qubit_ng_ul_pre      = `Qubit (ng/µl) DNA conc. original sample`,
-    Nanodrop_ng_ul_pre   = `Nanodrop original sample`,
-    Qubit_ng_ul_post     = `Qubit (ng/µl) after cleaning with the AMPure beas (15ul of sample and 15 ul of beads, elution in 30ul DNAse free water)`,
-    Nanodrop_ng_ul_post  = `Nanodrop after cleaning with the AMPure beas (15ul of sample and 15 ul of beads, elution in 30ul DNAse free water)`,
-    A260_post            = `A260...22`,
-    A280_post            = `A280...23`,
-    Ratio_260_280_post   = `260/280...24`,
-    Ratio_260_230_post   = `260/230...25`
+  transmute(
+    Sample_ID           = Sample_ID,
+    Well                = Well,
+    Qubit_ng_ul_pre     = as.numeric(Qubit_ng_ul_pre),
+    Nanodrop_ng_ul_pre  = Nanodrop_ng_ul_pre,
+    A260_pre            = A260_pre,
+    Qubit_ng_ul_post    = Nanodrop_unit_post,
+    Nanodrop_ng_ul_post = A260_post,
+    A260_post           = as.numeric(A260_post),
+    A280_post           = as.numeric(Ratio_260_280_post),
+    Ratio_260_280_post  = `260/280...24`,
+    Ratio_260_230_post  = `260/230...25`
   )
-
-df_cleaning <- df_cleaning %>%
-  mutate(across(where(is.character) & !c(Sample_ID, Well), as.numeric)) %>%  # catch stray character columns
-  mutate(across(c(Qubit_ng_ul_pre), as.numeric))  #_
-
 
 
 write_csv(df_cleaning, "data/processed/dna_cleanup_marly_2023.csv")
