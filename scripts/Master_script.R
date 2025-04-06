@@ -37,6 +37,17 @@
 #   - NanoPlot
 #   - samtools stats
 
+# Summary metrics (pre- and post-filtering):
+#   ▸ Mean read quality:       Q15.6
+#   ▸ Number of reads:         ~1.57M
+#   ▸ Read length N50:         ~1,393 bp
+#   ▸ Percent reads > Q10:     98.1%
+#   ▸ Percent reads > Q15:     65.1%
+#
+# 📊 Quality report:
+#   - NanoPlot HTML report (interactive):
+#     ▸ data/raw/16S_sequencing/quality/NanoPlot-report.html
+
 # 🧬 Step 0.3: Taxonomic Classification (EMU)
 # --------------------------------------------------
 # Tool: EMU (Exact Mapping of 16S reads)
@@ -55,6 +66,18 @@
 #   - Full pipeline details, filtering criteria, and HPC command logs:
 #     ▸ Protocols/Data_processing/README_16s_data_preprocessing.pdf
 
+# 🧾 Step 0.4: Sample Tracking Metadata (PCR + Pooling)
+# --------------------------------------------------
+# The following files document the 16S plate setup, robot buffer input,
+# and pooling decisions used to prepare samples for sequencing.
+# These are **not used in the downstream R analysis**, but archived
+# for provenance and reproducibility.
+
+# 📄 Documents:
+#   - 16S PCR plate metadata:            data/raw/16S_sequencing/16s_PCR/20231123_PCR_final.xlsx
+#   - Opentrons robot buffer input:      data/raw/16S_sequencing/16s_PCR/pipetingrobot_muster/Buffer CSV_19-03-2024_namibia_plate16s.csv
+#   - Opentrons robot sample input:      data/raw/16S_sequencing/16s_PCR/pipetingrobot_muster/Sample CSV_19-03-2024_namibia_plate16s.csv
+#   - Sample pooling design:             data/raw/16S_sequencing/16s_PCR/pipetingrobot_muster/Sample_pooling_CSV_03-04-2024.csv
 # ***********************************************************
 # Part 1: Set Standard Settings & Load Libraries ----
 # ***********************************************************
@@ -112,8 +135,8 @@ source(file.path(scripts_dir, "preprocessing", "1_import_clean_field_data.R"))
 #----------------------------------------------------------*
 # 3.3: AMPure Cleanup QC (Marly)
 #----------------------------------------------------------*
-message("\n🔹 Step 3.3: Processing DNA cleanup QC from AMPure protocol...")
-source(file.path(scripts_dir, "preprocessing", "03_dna_cleaning_qc_marly.R"))
+#message("\n🔹 Step 3.3: Processing DNA cleanup QC from AMPure protocol...")
+#source(file.path(scripts_dir, "preprocessing", "03_dna_cleaning_qc_marly.R"))
 
 
 
@@ -122,6 +145,12 @@ source(file.path(scripts_dir, "preprocessing", "03_dna_cleaning_qc_marly.R"))
 # ***********************************************************
 
 #----------------------------------------------------------*
+#----------------------------------------------------------*
+# 4.1a: Rename OTU Columns Using Sample Metadata
+#----------------------------------------------------------*
+message("\n🔹 Step 4.1a: Linking barcode names to rodent data frame")
+source(file.path(scripts_dir, "preprocessing", "02_link_barcode_to_metadata.R"))
+
 # 4.1: Process OTU Table & Taxonomic Assignments
 #----------------------------------------------------------*
 #message("\n🔹 Step 4.1: Processing OTU & taxonomic data...")
