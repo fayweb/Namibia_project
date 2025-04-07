@@ -1,27 +1,3 @@
----
-title: 'Comparison of Filtering Strategies: Marly vs Melanie'
-author: "Fay Webster"
-date: "`r Sys.Date()`"
-output:
-  html_document: default
-  pdf_document: default
----
-
-# Purpose
-This script compares 16S Nanopore OTU filtering outputs from two strategies:
-- **Marly's filtering** (standard)
-- **Melanie's filtering** (lenient)
-
-We assess:
-- Read depth distributions
-- Taxonomic richness and diversity
-- Contamination and rare taxa prevalence
-- Rarefaction and compositional consistency
-
-Ultimately, we will select the best strategy for integration into the main 
-metadata pipeline.
-
-```{r setup, message=FALSE, warning=FALSE}
 # Load required libraries
 library(tidyverse)
 library(ggplot2)
@@ -35,9 +11,6 @@ otu_melanie <- read.csv("Data/processed/EMU_output/melanie_lenient_filtering/otu
 glimpse(otu_marly)
 glimpse(otu_melanie)
 
-```
-
-```{r merge and compare, message=FALSE, warning=FALSE}
 
 # Add a filtering label to each dataset
 otu_marly$filtering <- "Marly_standard"
@@ -48,8 +21,8 @@ otu_combined <- dplyr::bind_rows(otu_marly, otu_melanie)
 
 # Summarize total reads per sample
 read_depth <- otu_combined %>%
-  group_by(barcode, filtering) %>%
-  summarise(total_reads = sum(count), .groups = "drop")
+  dplyr::group_by(barcode, filtering) %>%
+  dplyr::summarise(total_reads = sum(count), .groups = "drop")
 
 # Plot read depth
 ggplot(read_depth, aes(x = reorder(barcode, -total_reads), y = total_reads, fill = filtering)) +
@@ -59,5 +32,3 @@ ggplot(read_depth, aes(x = reorder(barcode, -total_reads), y = total_reads, fill
        y = "Total Reads") +
   theme_bw() +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
-
-```
