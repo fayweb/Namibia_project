@@ -100,7 +100,7 @@ pacman::p_load(
   corrplot, patchwork, ggrepel, RColorBrewer, pheatmap, caret,
   randomForest, rfUtilities, optimx, ggpubr, FactoMineR, factoextra,
   leaflet, kableExtra, broom, magrittr, data.table, sf, rnaturalearth,
-  RColorBrewer, tmap, mapview, cowplot, magick, readxl, qgraph
+  RColorBrewer, tmap, mapview, cowplot, magick, readxl, qgraph, vegan
 )
 
 # ***********************************************************
@@ -198,10 +198,37 @@ message(
   "\n🔹 Step 4.1c: Integrating OTU counts with taxonomy and rodent metadata...")
 source(
   file.path(scripts_dir, "preprocessing", "04a_merge_otu_tables_to_metadata.R"))
+#----------------------------------------------------------*
 # 4.1d: Compare EMU Filtering Pipelines
+#----------------------------------------------------------*
+# This step runs a full RMarkdown comparison between two
+# EMU OTU filtering strategies:
+#   - Marly's standard filtering
+#   - Melanie's lenient filtering
+#
+# The script performs:
+#   ▸ Read depth summaries
+#   ▸ Alpha diversity comparison (richness, Shannon)
+#   ▸ Rare taxa quantification
+#   ▸ Phylum-level taxonomic composition
+#   ▸ Rarefaction curve visualisation
+#   ▸ NMDS ordination (Bray-Curtis beta diversity)
+#
+# 📂 Outputs:
+#   ▸ HTML report:
+# Protocols/Data_processing/04b_compare_filtering_marly_vs_melanie.html
+#   ▸ PDF report:
+# Protocols/Data_processing/Comparison_filtering_strategies_Marly_Melanie.pdf
+#
+# 4.1d: Compare filtering strategies and save report to protocols folder
 message("\n🔹 Step 4.1d: Comparing filtering approaches from Marly and Melanie...")
-rmarkdown::render(file.path(scripts_dir, "taxonomy",
-                            "04b_compare_filtering_marly_vs_melanie.Rmd"))
+rmarkdown::render(
+  input = file.path(scripts_dir, "preprocessing", "04b_compare_filtering_marly_vs_melanie.Rmd"),
+  knit_root_dir = project_root,
+  output_file = "04b_compare_filtering_marly_vs_melanie.html",
+  output_dir = file.path(project_root, "Protocols", "Data_processing")
+)
+
 
 
 # 4.1: Process OTU Table & Taxonomic Assignments
@@ -264,6 +291,11 @@ source(file.path(scripts_dir, "visualization", "05_variable_relationships.R"))
 # ----------------------------------------------------------*
 message("\n🔹 Step 5.8: Creating panel plots for site locations...")
 source(file.path(scripts_dir, "visualization", "05_site_panels.R"))
+# ----------------------------------------------------------*
+# 5.9: Mouse Parasite Heatmap - 28S EMU (Emanuel's Analysis)
+# ----------------------------------------------------------*
+message("\n🔹 Step 5.9: Generating 28S parasite heatmap for rodent samples (Emanuel's EMU output)...")
+source(file.path(scripts_dir, "preprocessing", "05a_mouse_parasite_28s_analysis.R"))
 
 
 
