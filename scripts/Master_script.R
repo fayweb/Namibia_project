@@ -176,7 +176,13 @@ source(file.path(scripts_dir, "preprocessing", "02_link_barcode_to_metadata.R"))
 # 📄 Documentation:
 #   - EMU outputs and filtering description:
 #     ▸ Protocols/Data_processing/EMU_outputs_documentation.md
-
+#----------------------------------------------------------*
+# 4.1c: Integrate & Compare OTU Tables (Marly vs Melanie)
+#----------------------------------------------------------*
+# Purpose: Merge the two EMU OTU long tables (standard vs lenient filtering)
+# using tax_id and barcode for downstream comparative analysis.
+message("\n🔹 Step 4.1c: Integrating EMU OTU counts from Marly and Melanie...")
+source(file.path(scripts_dir, "preprocessing", "04a_merge_otu_tables_to_metadata.R"))
 
 # 4.1: Process OTU Table & Taxonomic Assignments
 #----------------------------------------------------------*
