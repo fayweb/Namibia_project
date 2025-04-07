@@ -21,6 +21,5 @@ rodent_data <- rodent_data %>%
   mutate(Sex = ifelse(Sex == "", "unidentified", Sex)) %>%
   mutate(Sex = gsub("63", "unidentified", Sex))
 
-# Save cleaned dataset
-write_csv(rodent_data, "Data/processed/cleaned_rodent_data.csv")
+
 message("✅ Rodent field data cleaned successfully!")
