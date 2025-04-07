@@ -1,0 +1,42 @@
+---
+title: 'Comparison of Filtering Strategies: Marly vs Melanie'
+author: "Fay Webster"
+date: "`r Sys.Date()`"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+# Purpose
+This script compares 16S Nanopore OTU filtering outputs from two strategies:
+- **Marly's filtering** (standard)
+- **Melanie's filtering** (lenient)
+
+We assess:
+- Read depth distributions
+- Taxonomic richness and diversity
+- Contamination and rare taxa prevalence
+- Rarefaction and compositional consistency
+
+Ultimately, we will select the best strategy for integration into the main 
+metadata pipeline.
+
+```{r setup, message=FALSE, warning=FALSE}
+# Load required libraries
+library(tidyverse)
+library(ggplot2)
+library(janitor)
+
+# Read merged OTU + taxonomy + metadata files
+otu_marly <- read.csv("Data/processed/EMU_output/marly_standard_filtering/otu_taxonomy_metadata_marly.csv")
+otu_melanie <- read.csv("Data/processed/EMU_output/melanie_lenient_filtering/otu_taxonomy_metadata_melanie.csv")
+
+# Quick check of structure
+glimpse(otu_marly)
+glimpse(otu_melanie)
+
+
+```
+
+
+

@@ -74,10 +74,14 @@
 # for provenance and reproducibility.
 
 # 📄 Documents:
-#   - 16S PCR plate metadata:            data/raw/16S_sequencing/16s_PCR/20231123_PCR_final.xlsx
-#   - Opentrons robot buffer input:      data/raw/16S_sequencing/16s_PCR/pipetingrobot_muster/Buffer CSV_19-03-2024_namibia_plate16s.csv
-#   - Opentrons robot sample input:      data/raw/16S_sequencing/16s_PCR/pipetingrobot_muster/Sample CSV_19-03-2024_namibia_plate16s.csv
-#   - Sample pooling design:             data/raw/16S_sequencing/16s_PCR/pipetingrobot_muster/Sample_pooling_CSV_03-04-2024.csv
+#   - 16S PCR plate metadata:
+#   data/raw/16S_sequencing/16s_PCR/20231123_PCR_final.xlsx
+#   - Opentrons robot buffer input:
+#         data/raw/16S_sequencing/16s_PCR/pipetingrobot_muster/Buffer CSV_19-03-2024_namibia_plate16s.csv
+#   - Opentrons robot sample input:
+#         data/raw/16S_sequencing/16s_PCR/pipetingrobot_muster/Sample CSV_19-03-2024_namibia_plate16s.csv
+#   - Sample pooling design:
+#                data/raw/16S_sequencing/16s_PCR/pipetingrobot_muster/Sample_pooling_CSV_03-04-2024.csv
 # ***********************************************************
 # Part 1: Set Standard Settings & Load Libraries ----
 # ***********************************************************
@@ -96,7 +100,7 @@ pacman::p_load(
   corrplot, patchwork, ggrepel, RColorBrewer, pheatmap, caret,
   randomForest, rfUtilities, optimx, ggpubr, FactoMineR, factoextra,
   leaflet, kableExtra, broom, magrittr, data.table, sf, rnaturalearth,
-  RColorBrewer, tmap, mapview, cowplot, magick, readxl
+  RColorBrewer, tmap, mapview, cowplot, magick, readxl, qgraph
 )
 
 # ***********************************************************
@@ -177,12 +181,28 @@ source(file.path(scripts_dir, "preprocessing", "02_link_barcode_to_metadata.R"))
 #   - EMU outputs and filtering description:
 #     ▸ Protocols/Data_processing/EMU_outputs_documentation.md
 #----------------------------------------------------------*
-# 4.1c: Integrate & Compare OTU Tables (Marly vs Melanie)
 #----------------------------------------------------------*
-# Purpose: Merge the two EMU OTU long tables (standard vs lenient filtering)
-# using tax_id and barcode for downstream comparative analysis.
-message("\n🔹 Step 4.1c: Integrating EMU OTU counts from Marly and Melanie...")
-source(file.path(scripts_dir, "preprocessing", "04a_merge_otu_tables_to_metadata.R"))
+# 4.1c: Integrate OTU Tables + Taxonomy + Rodent Metadata
+#----------------------------------------------------------*
+# Purpose:
+#   - Clean and pivot Marly's and Melanie's OTU count tables
+#   - Join with EMU taxonomy assignments
+#   - Integrate with rodent metadata using barcodes
+#   - Save fully annotated OTU tables separately for each filtering strategy
+#
+# 📄 Script: Scripts/Preprocessing/04a_merge_otu_tables_to_metadata.R
+# 📂 Outputs:
+#   - otu_taxonomy_metadata_marly.csv    (standard filtering)
+#   - otu_taxonomy_metadata_melanie.csv (lenient filtering)
+message(
+  "\n🔹 Step 4.1c: Integrating OTU counts with taxonomy and rodent metadata...")
+source(
+  file.path(scripts_dir, "preprocessing", "04a_merge_otu_tables_to_metadata.R"))
+# 4.1d: Compare EMU Filtering Pipelines
+message("\n🔹 Step 4.1d: Comparing filtering approaches from Marly and Melanie...")
+rmarkdown::render(file.path(scripts_dir, "taxonomy",
+                            "04b_compare_filtering_marly_vs_melanie.Rmd"))
+
 
 # 4.1: Process OTU Table & Taxonomic Assignments
 #----------------------------------------------------------*
