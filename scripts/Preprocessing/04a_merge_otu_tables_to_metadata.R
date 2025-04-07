@@ -42,7 +42,7 @@ otu_melanie_long <- otu_melanie %>%
   pivot_longer(-tax_id, names_to = "barcode", values_to = "count_melanie") %>%
   filter(barcode %in% barcode_vector)
 
-otu_merged <- full_join(otu_marly_long, otu_melanie_long, by = c("tax_id", "barcode"))
+
 
 
 
@@ -98,5 +98,5 @@ write_csv(otu_melanie_full,
 # remove unecessary files
 rm(otu_marly, otu_marly_annotated, otu_marly_long, otu_marly_path,
    otu_melanie, otu_melanie_annotated, otu_melanie_long, otu_melanie_path,
-   otu_merged, tax_marly, tax_melanie)
+   tax_marly, tax_melanie)
 

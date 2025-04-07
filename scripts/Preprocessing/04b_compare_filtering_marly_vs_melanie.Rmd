@@ -1,63 +1,464 @@
 ---
-title: 'Comparison of Filtering Strategies: Marly vs Melanie'
+title: "Comparison of Filtering Strategies: Marly vs Melanie"
 author: "Fay Webster"
-date: "`r Sys.Date()`"
 output:
-  html_document: default
-  pdf_document: default
+  html_document:
+    toc: true
+    toc_depth: 2
+    number_sections: true
+editor_options:
+  chunk_output_type: console
 ---
 
-# Purpose
-This script compares 16S Nanopore OTU filtering outputs from two strategies:
-- **Marly's filtering** (standard)
-- **Melanie's filtering** (lenient)
+# Overview
 
-We assess:
-- Read depth distributions
-- Taxonomic richness and diversity
-- Contamination and rare taxa prevalence
-- Rarefaction and compositional consistency
+This analysis compares the output of two filtering strategies used on 16S Nanopore sequencing data for the Namibia Rodent Project:
 
-Ultimately, we will select the best strategy for integration into the main 
-metadata pipeline.
+- **Marly's Filtering** – a standard, more stringent pipeline.
+- **Melanie's Filtering** – a lenient filtering strategy.
+
+The goal is to determine which filtering strategy yields higher quality and more biologically meaningful taxonomic profiles for downstream integration with metadata.
+
+We evaluate:
+- Read depth per sample
+- Read depth differences between strategies
+- Descriptive statistics for both pipelines
+
+---
+
+## Setup
 
 ```{r setup, message=FALSE, warning=FALSE}
-# Load required libraries
+# Load required packages
 library(tidyverse)
-library(ggplot2)
 library(janitor)
+library(ggplot2)
+library(vegan)
 
-# Read merged OTU + taxonomy + metadata files
-otu_marly <- read.csv("Data/processed/EMU_output/marly_standard_filtering/otu_taxonomy_metadata_marly.csv")
-otu_melanie <- read.csv("Data/processed/EMU_output/melanie_lenient_filtering/otu_taxonomy_metadata_melanie.csv")
-
-# Quick check of structure
-glimpse(otu_marly)
-glimpse(otu_melanie)
-
+# Read annotated OTU + taxonomy + metadata tables
+otu_marly <- read_csv("Data/processed/EMU_output/marly_standard_filtering/otu_taxonomy_metadata_marly.csv")
+otu_melanie <- read_csv("Data/processed/EMU_output/melanie_lenient_filtering/otu_taxonomy_metadata_melanie.csv")
 ```
 
-```{r merge and compare, message=FALSE, warning=FALSE}
+## Read Depth Per Sample (Separate Summaries)
+```{r depth, message=FALSE, warning=FALSE}
+# Add filtering labels
+otu_marly$filtering <- "Marly (standard)"
+otu_melanie$filtering <- "Melanie (lenient)"
 
-# Add a filtering label to each dataset
-otu_marly$filtering <- "Marly_standard"
-otu_melanie$filtering <- "Melanie_lenient"
+# Summarize reads per barcode
+reads_marly <- otu_marly %>%
+  group_by(barcode) %>%
+  summarise(total_reads = sum(count_marly, na.rm = TRUE)) %>%
+  mutate(filtering = "Marly (standard)")
 
-# Bind both datasets
-otu_combined <- dplyr::bind_rows(otu_marly, otu_melanie)
+reads_melanie <- otu_melanie %>%
+  group_by(barcode) %>%
+  summarise(total_reads = sum(count_melanie, na.rm = TRUE)) %>%
+  mutate(filtering = "Melanie (lenient)")
 
-# Summarize total reads per sample
-read_depth <- otu_combined %>%
-  group_by(barcode, filtering) %>%
-  summarise(total_reads = sum(count), .groups = "drop")
+# Combine summaries
+read_depth_comparison <- bind_rows(reads_marly, reads_melanie)
 
-# Plot read depth
-ggplot(read_depth, aes(x = reorder(barcode, -total_reads), y = total_reads, fill = filtering)) +
+# Barplot: total reads per sample by filtering method
+ggplot(read_depth_comparison, aes(x = reorder(barcode, -total_reads), y = total_reads, fill = filtering)) +
   geom_bar(stat = "identity", position = "dodge") +
   labs(title = "Read Depth per Sample by Filtering Strategy",
-       x = "Sample Barcode",
-       y = "Total Reads") +
+       x = "Sample Barcode", y = "Total Reads") +
   theme_bw() +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
 
 ```
+## Total Read Comparison
+```{r total_read, message=FALSE, warning=FALSE}
+# Total read counts
+sum_marly <- sum(otu_marly$count_marly, na.rm = TRUE)
+sum_melanie <- sum(otu_melanie$count_melanie, na.rm = TRUE)
+
+# Table summary
+tibble(
+  Filtering = c("Marly (standard)", "Melanie (lenient)"),
+  Total_Reads = c(sum_marly, sum_melanie)
+)
+
+```
+
+# Read Depth Difference Per Sample
+
+```{r read_depth_difference, message=FALSE, warning=FALSE}
+# Summarize reads per sample again
+reads_marly <- otu_marly %>%
+  group_by(barcode) %>%
+  summarise(reads_marly = sum(count_marly, na.rm = TRUE))
+
+reads_melanie <- otu_melanie %>%
+  group_by(barcode) %>%
+  summarise(reads_melanie = sum(count_melanie, na.rm = TRUE))
+
+# Join and calculate difference (Melanie - Marly)
+reads_compare <- left_join(reads_marly, reads_melanie, by = "barcode") %>%
+  mutate(diff = reads_melanie - reads_marly)
+
+# Plot differences
+ggplot(reads_compare, aes(x = reorder(barcode, -diff), y = diff)) +
+  geom_col(fill = "steelblue") +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  labs(title = "Difference in Read Depth per Sample (Melanie - Marly)",
+       x = "Sample Barcode", y = "Read Count Difference") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+```
+## Summary
+The total read counts across both pipelines are nearly identical.
+
+A small number of samples show substantial differences in read count.
+
+Further comparison will explore taxonomic diversity, low-abundance taxa, 
+and ecological patterns
+
+## Alpha Diversity Metrics
+
+```{r alpha_diversity, message=FALSE, warning=FALSE}
+# Calculate taxonomic richness and Shannon for each dataset
+# Function to calculate richness and Shannon index per sample
+calculate_alpha <- function(df, count_col) {
+  df %>%
+    filter(!is.na(!!sym(count_col))) %>%
+    group_by(barcode) %>%
+    summarise(
+      richness = n_distinct(tax_id[!!sym(count_col) > 0]),
+      shannon = diversity(!!sym(count_col), index = "shannon")
+    )
+}
+
+alpha_marly <- calculate_alpha(otu_marly, "count_marly") %>%
+  mutate(filtering = "Marly (standard)")
+alpha_melanie <- calculate_alpha(otu_melanie, "count_melanie") %>%
+  mutate(filtering = "Melanie (lenient)")
+
+# Combine
+alpha_diversity <- bind_rows(alpha_marly, alpha_melanie)
+
+# Plot richness
+ggplot(alpha_diversity, aes(x = filtering, y = richness, fill = filtering)) +
+  geom_boxplot() +
+  labs(title = "Richness per Sample by Filtering Strategy",
+       y = "Observed Taxa (Richness)", x = NULL) +
+  theme_bw() +
+  theme(legend.position = "none")
+
+# Plot Shannon
+ggplot(alpha_diversity, aes(x = filtering, y = shannon, fill = filtering)) +
+  geom_boxplot() +
+  labs(title = "Shannon Diversity per Sample by Filtering Strategy",
+       y = "Shannon Index", x = NULL) +
+  theme_bw() +
+  theme(legend.position = "none")
+
+```
+
+## Alpha Diversity Results
+
+### Richness per Sample
+
+- Median richness is comparable between Marly's (standard) and Melanie's (lenient) 
+filtering strategies.
+- Marly's filtering shows:
+  - A slightly wider spread in richness values.
+  - A few samples with notably high observed taxa (richness outliers).
+- Melanie's filtering:
+  - Has a similar overall range, but the middle 50% of values are more tightly 
+  grouped.
+- **Interpretation:** Marly’s stricter filtering may retain more low-abundance 
+taxa in high-depth samples, whereas Melanie’s leniency results in more 
+consistent richness across samples.
+
+### Shannon Diversity per Sample
+
+- Shannon diversity indices are highly similar across both strategies.
+- Median values and interquartile ranges overlap.
+- Both filtering methods preserve community evenness and overall taxonomic 
+entropy.
+- **Interpretation:** There is no evidence that one strategy over- or 
+underestimates diversity — both appear robust for overall alpha diversity.
+
+##  Compare OTU Richness (Unique tax IDs)
+This step evaluates how many unique taxonomic IDs (OTUs) were detected by 
+each filtering strategy. This gives insight into potential over- or 
+under-filtering effects on microbial community resolution.
+```{r OTU_Richness, message=FALSE, warning=FALSE}
+# Unique tax IDs detected per filtering strategy
+richness_marly <- otu_marly %>%
+  filter(count_marly > 0) %>%
+  distinct(tax_id) %>%
+  summarise(rich_taxa = n()) %>%
+  mutate(filtering = "Marly (standard)")
+
+richness_melanie <- otu_melanie %>%
+  filter(count_melanie > 0) %>%
+  distinct(tax_id) %>%
+  summarise(rich_taxa = n()) %>%
+  mutate(filtering = "Melanie (lenient)")
+
+# Combine results
+otu_richness <- bind_rows(richness_marly, richness_melanie)
+
+# Display table
+knitr::kable(otu_richness, caption = "Unique Taxonomic IDs Detected by Filtering Strategy")
+
+```
+### OTU Richness Summary
+We calculated the total number of unique taxonomic identifiers (tax_id) 
+detected by each EMU output.
+
+The number of observed taxa was identical across both filtering strategies.
+
+#### Interpretation
+Marly (standard) and Melanie (lenient) both recovered 324 unique OTUs.
+
+Despite differences in filtering thresholds, both approaches converge on the 
+same number of taxa after metadata merging and filtering.
+
+## Step 4: Detect & Compare Rare Taxa (Low-Abundance OTUs)
+This step helps identify how many taxa are:
+
+Singletons: detected only once across all samples
+
+Doubletons: detected exactly twice
+
+Low-abundance: total counts across all samples <10
+
+```{r rare_taxa, message=FALSE, warning = FALSE}
+# Function to summarise rare taxa across all samples
+summarise_rare_taxa <- function(df, count_col, label) {
+  df %>%
+    group_by(tax_id) %>%
+    summarise(total_abundance = sum(.data[[count_col]], na.rm = TRUE)) %>%
+    summarise(
+      singletons = sum(total_abundance == 1),
+      doubletons = sum(total_abundance == 2),
+      low_abundance = sum(total_abundance < 10),
+      total_taxa = n()
+    ) %>%
+    mutate(filtering = label)
+}
+
+rare_marly <- summarise_rare_taxa(otu_marly, "count_marly", "Marly (standard)")
+rare_melanie <- summarise_rare_taxa(otu_melanie, "count_melanie", "Melanie (lenient)")
+
+# Combine and display
+rare_taxa_summary <- bind_rows(rare_marly, rare_melanie)
+
+knitr::kable(rare_taxa_summary, caption = "Rare Taxa Statistics by Filtering Strategy")
+
+```
+
+### Rare Taxa Summary
+We assessed how many OTUs fall into three categories of rarity:
+
+Singletons: detected only once across all samples
+
+Doubletons: detected exactly twice
+
+Low-abundance taxa: fewer than 10 reads total across all samples
+
+#### Interpretation
+Both pipelines perform identically in terms of removing extremely rare taxa.
+
+* The absence of singletons and doubletons suggests that post-EMU and filtering 
+steps effectively remove noise and potential artifacts.
+
+* 14 taxa remained with total read counts <10 — these could be biologically rare 
+taxa or borderline noise.
+
+* Conclusion: No evidence that one strategy over-retains low-abundance OTUs. 
+* Filtering stringency appears aligned in final outputs.
+
+## Compare Taxonomic Composition (Phylum-Level)
+Now we’ll check:
+
+The overall composition of microbial communities
+
+Whether different phyla dominate under each filtering strategy
+
+We’ll use a barplot showing the relative abundance of the top phyla per strategy.
+
+```{r tax_composition, warning=FALSE, message = FALSE}
+# Combine both datasets with matching column names
+otu_marly_long <- otu_marly %>%
+  select(barcode, tax_id, count = count_marly, phylum) %>%
+  mutate(filtering = "Marly (standard)")
+
+otu_melanie_long <- otu_melanie %>%
+  select(barcode, tax_id, count = count_melanie, phylum) %>%
+  mutate(filtering = "Melanie (lenient)")
+
+otu_combined_long <- bind_rows(otu_marly_long, otu_melanie_long)
+
+# Summarise total counts by phylum and filtering strategy
+top_phyla <- otu_combined_long %>%
+  group_by(filtering, phylum) %>%
+  summarise(total_reads = sum(count, na.rm = TRUE), .groups = "drop") %>%
+  group_by(filtering) %>%
+  mutate(rel_abundance = total_reads / sum(total_reads)) %>%
+  arrange(desc(rel_abundance)) %>%
+  group_by(filtering) %>%
+  slice_max(order_by = rel_abundance, n = 10)
+
+# Plot stacked barplot
+ggplot(top_phyla, aes(x = filtering, y = rel_abundance, fill = fct_reorder(phylum, rel_abundance))) +
+  geom_col(position = "stack") +
+  labs(title = "Top 10 Phyla by Relative Abundance",
+       x = NULL, y = "Relative Abundance", fill = "Phylum") +
+  theme_minimal()
+
+```
+
+### Phylum-Level Composition Summary
+We visualized the top 10 phyla by relative abundance across both filtering 
+strategies.
+
+The bar plot shows stacked proportions of total read abundance per phylum, 
+grouped by filtering approach.
+
+#### Interpretation
+
+* Bacteroidota and Firmicutes dominate both datasets, comprising the majority of 
+reads.
+
+* Minor phyla such as Actinobacteriota, Proteobacteria, and Cyanobacteria are 
+also consistently represented.
+
+*  No phylum was uniquely present or absent in either strategy.
+
+*  The relative proportions of major phyla are highly consistent between Marly 
+and Melanie outputs.
+
+#### Conclusion:
+Both pipelines preserve broad community structure and relative taxonomic profiles.
+Filtering differences do not shift dominant community composition at the phylum 
+level.
+
+## Rarefaction Curves
+Rarefaction curves visualize the relationship between sequencing depth and 
+taxonomic richness across samples. They help assess:
+
+Whether sequencing effort was sufficient
+
+If one filtering strategy retains more taxa at similar depth
+
+```{r rarefaction, message=FALSE, warning = FALSE}
+# Convert wide and round to integers
+# Marly abundance matrix
+otu_marly_wide <- otu_marly %>%
+  select(barcode, tax_id, count_marly) %>%
+  pivot_wider(names_from = tax_id, values_from = count_marly) %>%
+  replace(is.na(.), 0) %>%  # force replace NAs
+  column_to_rownames("barcode") %>%
+  as.matrix() %>%
+  round()
+
+# Melanie abundance matrix
+otu_melanie_wide <- otu_melanie %>%
+  select(barcode, tax_id, count_melanie) %>%
+  pivot_wider(names_from = tax_id, values_from = count_melanie) %>%
+  replace(is.na(.), 0) %>%
+  column_to_rownames("barcode") %>%
+  as.matrix() %>%
+  round()
+
+# Plot rarefaction curves
+par(mfrow = c(1, 2))
+rarecurve(otu_marly_wide, step = 100, label = FALSE, col = "steelblue",
+          main = "Rarefaction - Marly (standard)")
+rarecurve(otu_melanie_wide, step = 100, label = FALSE, col = "darkgreen",
+          main = "Rarefaction - Melanie (lenient)")
+
+```
+
+### Rarefaction Curve Summary
+Rarefaction curves illustrate the relationship between sequencing depth and 
+taxonomic richness (number of species/OTUs observed per sample).
+
+#### Interpretation
+* Both Marly and Melanie filtering strategies show very similar curve shapes, 
+reaching saturation in most samples.
+* This indicates that sequencing depth was sufficient to capture most microbial 
+diversity in both datasets.
+* No major differences in richness accumulation are observed:
+* Both approaches plateau around ~100–120 taxa per sample.
+* No obvious drop-off in richness due to over-filtering in either pipeline.
+* Slight variation in early curve slopes may reflect sample-specific differences 
+in complexity, not filtering effects.
+
+#### Conclusion
+The rarefaction analysis confirms that both filtering strategies preserve 
+comparable levels of within-sample taxonomic richness.
+
+No evidence suggests under-sampling or diversity loss in either pipeline.
+
+## Beta Diversity & Ordination
+Beta diversity helps us understand how community composition varies between 
+samples. 
+We’ll:
+
+Transform the OTU tables to relative abundance
+
+Calculate Bray-Curtis distances
+
+Perform non-metric multidimensional scaling (NMDS)
+
+Visualize using an ordination plot colored by filtering strategy
+
+
+```{r beta_diversity}
+# Prepare relative abundance matrices
+ra_marly <- sweep(otu_marly_wide, 1, rowSums(otu_marly_wide), FUN = "/")
+ra_melanie <- sweep(otu_melanie_wide, 1, rowSums(otu_melanie_wide), FUN = "/")
+
+# Add sample IDs
+ra_marly_df <- as.data.frame(ra_marly) %>%
+  mutate(barcode = rownames(ra_marly),
+         filtering = "Marly (standard)")
+
+ra_melanie_df <- as.data.frame(ra_melanie) %>%
+  mutate(barcode = rownames(ra_melanie),
+         filtering = "Melanie (lenient)")
+
+# Combine
+otu_rel_abund <- bind_rows(ra_marly_df, ra_melanie_df)
+otu_matrix <- otu_rel_abund %>%
+  select(-barcode, -filtering) %>%
+  as.matrix()
+
+# Perform NMDS using vegan
+set.seed(123)
+nmds <- vegan::metaMDS(otu_matrix, distance = "bray", k = 2, trymax = 100)
+
+# Extract NMDS coordinates
+nmds_points <- as.data.frame(nmds$points) %>%
+  mutate(barcode = otu_rel_abund$barcode,
+         filtering = otu_rel_abund$filtering)
+
+# Plot
+ggplot(nmds_points, aes(x = MDS1, y = MDS2, color = filtering)) +
+  geom_point(size = 3, alpha = 0.8) +
+  labs(title = "NMDS Ordination (Bray-Curtis)",
+       subtitle = "Comparison of Microbial Community Structure",
+       x = "NMDS1", y = "NMDS2") +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+
+```
+
+### Conclusion
+Both pipelines produce comparable community composition profiles.
+
+No evidence that one filtering method substantially shifts beta diversity 
+structure.
+
+This supports robustness of EMU taxonomic assignments across filtering 
+strategies.
+
+
