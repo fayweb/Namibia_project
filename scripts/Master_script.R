@@ -117,6 +117,26 @@ figures_dir    <- file.path(results_dir, "figures")
 tables_dir     <- file.path(results_dir, "tables")
 scripts_dir    <- file.path(project_root, "scripts")
 
+# create vectors for selecting relevant columns in the downstream analysis
+# Define vector of trapping-relevant columns from rodent_data
+trapping_vars <- c(
+  "Latitude",
+  "Longitude",
+  "Morphology_species",
+  "Sex",
+  "Age",
+  "Weight_g",
+  "Location_type",
+  "Date"
+)
+
+# Define vector of barcode/sequencing-relevant columns
+barcode_vars <- c(
+  "conc_16s__PCR",
+  "barcode"
+)
+
+
 # ***********************************************************
 # Part 3: Data Cleaning - Rodent Field Data ----
 # ***********************************************************
@@ -150,6 +170,13 @@ source(file.path(scripts_dir, "preprocessing", "1_import_clean_field_data.R"))
 #----------------------------------------------------------*
 message("\n🔹 Step 4.1a: Linking barcode names to rodent data frame")
 source(file.path(scripts_dir, "preprocessing", "02_link_barcode_to_metadata.R"))
+#----------------------------------------------------------*
+# 4.1b: Renamed EMU OTU Tables - Marly vs Melanie
+#----------------------------------------------------------*
+# 📄 Documentation:
+#   - EMU outputs and filtering description:
+#     ▸ Protocols/Data_processing/EMU_outputs_documentation.md
+
 
 # 4.1: Process OTU Table & Taxonomic Assignments
 #----------------------------------------------------------*
