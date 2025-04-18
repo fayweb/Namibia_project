@@ -100,7 +100,7 @@ pacman::p_load(
   corrplot, patchwork, ggrepel, RColorBrewer, pheatmap, caret,
   randomForest, rfUtilities, optimx, ggpubr, FactoMineR, factoextra,
   leaflet, kableExtra, broom, magrittr, data.table, sf, rnaturalearth,
-  RColorBrewer, tmap, mapview, cowplot, magick, readxl, qgraph, vegan
+  RColorBrewer, tmap, mapview, cowplot, magick, readxl, qgraph, vegan, ggvenn
 )
 
 # ***********************************************************
@@ -140,6 +140,18 @@ barcode_vars <- c(
   "barcode"
 )
 
+# Define vector of 16S EMU OTU + taxonomy result columns
+otu_16s_vars <- c(
+  "tax_id",
+  "count_marly_16s",
+  "species_16s",
+  "genus_16s",
+  "family_16s",
+  "order_16s",
+  "class_16s",
+  "phylum_16s",
+  "superkingdom_16s"
+)
 
 # ***********************************************************
 # Part 3: Data Cleaning - Rodent Field Data ----
@@ -221,13 +233,30 @@ source(
 # Protocols/Data_processing/Comparison_filtering_strategies_Marly_Melanie.pdf
 #
 # 4.1d: Compare filtering strategies and save report to protocols folder
-message("\n🔹 Step 4.1d: Comparing filtering approaches from Marly and Melanie...")
-rmarkdown::render(
-  input = file.path(scripts_dir, "preprocessing", "04b_compare_filtering_marly_vs_melanie.Rmd"),
-  knit_root_dir = project_root,
-  output_file = "04b_compare_filtering_marly_vs_melanie.html",
-  output_dir = file.path(project_root, "Protocols", "Data_processing")
-)
+#message("\n🔹 Step 4.1d: Comparing filtering approaches from Marly and Melanie...")
+#rmarkdown::render(
+ # input = file.path(scripts_dir, "preprocessing", "04b_compare_filtering_marly_vs_melanie.Rmd"),
+  #knit_root_dir = project_root,
+#  output_file = "04b_compare_filtering_marly_vs_melanie.html",
+ # output_dir = file.path(project_root, "Protocols", "Data_processing")
+#)
+#----------------------------------------------------------*
+# 4.1e: Select Final Filtering Strategy for Downstream Analysis
+#----------------------------------------------------------*
+# Based on comparisons in 04b_compare_filtering_marly_vs_melanie.Rmd,
+# we selected Marly's standard filtering for all downstream microbiome analyses.
+
+# This script copies the final annotated OTU table and standardizes
+# its name for clarity and reproducibility.
+#
+# 📄 Script: Scripts/Preprocessing/04c_select_final_filtering_output.R
+# 📂 Outputs:
+#   - otu_taxonomy_metadata_final.csv
+#     (used for diversity, phyloseq, and downstream community analysis)
+message("\n🔹 Step 4.1e: Finalizing selection of Marly's filtered EMU output...")
+source(file.path(scripts_dir, "preprocessing", "04c_select_final_filtering_output.R"))
+
+
 
 
 
