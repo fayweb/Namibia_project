@@ -9,8 +9,6 @@
 # Step 1: Load & Prepare Data
 # ***********************************************************
 
-# Read processed rodent data
-rodent_data <- read_csv("data/processed/cleaned_rodent_data.csv")
 
 # Ensure Longitude and Latitude are numeric
 rodent_data <- rodent_data %>%

@@ -1,7 +1,11 @@
 ---
-title: "Comparison of Filtering Strategies: Marly vs Melanie"
+title: 'Comparison of Filtering Strategies: Marly vs Melanie'
 author: "Fay Webster"
 output:
+  word_document: default
+  pdf_document:
+    toc: true
+    toc_depth: '2'
   html_document:
     toc: true
     toc_depth: 2
@@ -16,6 +20,8 @@ This analysis compares the output of two filtering strategies used on 16S Nanopo
 
 - **Marly's Filtering** – a standard, more stringent pipeline.
 - **Melanie's Filtering** – a lenient filtering strategy.
+
+Hello
 
 The goal is to determine which filtering strategy yields higher quality and more biologically meaningful taxonomic profiles for downstream integration with metadata.
 
@@ -34,6 +40,7 @@ library(tidyverse)
 library(janitor)
 library(ggplot2)
 library(vegan)
+library(ggvenn)
 
 # Read annotated OTU + taxonomy + metadata tables
 otu_marly <- read_csv("Data/processed/EMU_output/marly_standard_filtering/otu_taxonomy_metadata_marly.csv")
@@ -452,6 +459,195 @@ ggplot(nmds_points, aes(x = MDS1, y = MDS2, color = filtering)) +
 
 ```
 
+## Zooming into genus level
+```{r genus, message=FALSE, warning= FALSE}
+# Genus-level richness
+genus_marly <- otu_marly %>%
+  filter(count_marly > 0, !is.na(genus)) %>%
+  distinct(genus) %>%
+  mutate(filtering = "Marly (standard)")
+
+genus_melanie <- otu_melanie %>%
+  filter(count_melanie > 0, !is.na(genus)) %>%
+  distinct(genus) %>%
+  mutate(filtering = "Melanie (lenient)")
+
+# Combine and count
+genus_comparison <- bind_rows(genus_marly, genus_melanie) %>%
+  group_by(filtering) %>%
+  summarise(n_genera = n_distinct(genus))
+
+genus_comparison
+
+venn_data <- list(
+  Marly = unique(genus_marly$genus),
+  Melanie = unique(genus_melanie$genus)
+)
+
+ggvenn(
+  venn_data,
+  fill_color = c("steelblue", "darkgreen"),
+  show_percentage = FALSE
+) +
+  ggtitle("Genus-Level Overlap Between Filtering Strategies")
+
+```
+
+
+
+## Zooming into species level
+```{r species, warnig = FALSE, message=FALSE}
+# Species-level richness
+species_marly <- otu_marly %>%
+  filter(count_marly > 0, !is.na(species)) %>%
+  distinct(species) %>%
+  mutate(filtering = "Marly (standard)")
+
+species_melanie <- otu_melanie %>%
+  filter(count_melanie > 0, !is.na(species)) %>%
+  distinct(species) %>%
+  mutate(filtering = "Melanie (lenient)")
+
+# Combine and count
+species_comparison <- bind_rows(species_marly, species_melanie) %>%
+  group_by(filtering) %>%
+  summarise(n_species = n_distinct(species))
+
+species_comparison
+
+venn_data <- list(
+  Marly = unique(species_marly$species),
+  Melanie = unique(species_melanie$species)
+)
+
+ggvenn(
+  venn_data,
+  fill_color = c("pink", "orange"),
+  show_percentage = FALSE
+) +
+  ggtitle("Species-Level Overlap Between Filtering Strategies")
+
+```
+
+
+## Compare the top genera
+```{r top_genus, warning=FALSE, message= FALSE}
+# Prepare long-format combined OTU table for genus counts
+otu_combined_genus <- bind_rows(
+  otu_marly %>% select(barcode, genus, count = count_marly) %>% mutate(filtering = "Marly (standard)"),
+  otu_melanie %>% select(barcode, genus, count = count_melanie) %>% mutate(filtering = "Melanie (lenient)")
+)
+
+# Summarize and get top genera
+top_genera <- otu_combined_genus %>%
+  group_by(filtering, genus) %>%
+  summarise(total = sum(count, na.rm = TRUE), .groups = "drop") %>%
+  group_by(filtering) %>%
+  slice_max(order_by = total, n = 10)
+
+# Plot
+ggplot(top_genera, aes(x = reorder(genus, total), y = total, fill = filtering)) +
+  geom_col(position = "dodge") +
+  coord_flip() +
+  labs(title = "Top 10 Genera by Total Read Count",
+       x = "Genus", y = "Total Reads") +
+  theme_minimal()
+
+```
+
+##  Compare Top Species
+
+```{r top_species, warning=FALSE, message=FALSE}
+# Prepare long-format combined OTU table for species counts
+otu_combined_species <- bind_rows(
+  otu_marly %>% select(barcode, species, count = count_marly) %>% mutate(filtering = "Marly (standard)"),
+  otu_melanie %>% select(barcode, species, count = count_melanie) %>% mutate(filtering = "Melanie (lenient)")
+)
+
+# Summarize and get top species
+top_species <- otu_combined_species %>%
+  filter(!is.na(species)) %>%
+  group_by(filtering, species) %>%
+  summarise(total = sum(count, na.rm = TRUE), .groups = "drop") %>%
+  group_by(filtering) %>%
+  slice_max(order_by = total, n = 10)
+
+# Plot
+ggplot(top_species, aes(x = reorder(species, total), y = total, fill = filtering)) +
+  geom_col(position = "dodge") +
+  coord_flip() +
+  labs(title = "Top 10 Species by Total Read Count",
+       x = "Species", y = "Total Reads") +
+  theme_minimal()
+
+```
+
+## Species Only Detected in One Pipeline
+
+```{r species_one_pipeline, warning=FALSE, message=FALSE}
+# Extract species present in each
+species_marly <- otu_marly %>%
+  filter(count_marly > 0, !is.na(species)) %>%
+  distinct(species) %>%
+  mutate(pipeline = "Marly")
+
+species_melanie <- otu_melanie %>%
+  filter(count_melanie > 0, !is.na(species)) %>%
+  distinct(species) %>%
+  mutate(pipeline = "Melanie")
+
+# Full species set
+all_species <- full_join(species_marly, species_melanie, by = "species", suffix = c("_marly", "_melanie"))
+
+# Identify unique to one pipeline
+unique_species <- all_species %>%
+  mutate(status = case_when(
+    is.na(pipeline_marly) & !is.na(pipeline_melanie) ~ "Only in Melanie",
+    !is.na(pipeline_marly) & is.na(pipeline_melanie) ~ "Only in Marly",
+    TRUE ~ "Shared"
+  )) %>%
+  filter(status != "Shared") %>%
+  arrange(status, species)
+
+# View table
+unique_species %>% select(species, status)
+
+```
+
+No species are unique to one or the other!
+
+##  Species Detected by Both, But with Big Abundance Differences
+```{r species_abu_diff, warning=FALSE, message=FALSE}
+# Summarise total counts per species per pipeline
+species_abund_marly <- otu_marly %>%
+  filter(!is.na(species)) %>%
+  group_by(species) %>%
+  summarise(total_marly = sum(count_marly, na.rm = TRUE))
+
+species_abund_melanie <- otu_melanie %>%
+  filter(!is.na(species)) %>%
+  group_by(species) %>%
+  summarise(total_melanie = sum(count_melanie, na.rm = TRUE))
+
+# Join together
+species_diff <- full_join(species_abund_marly, species_abund_melanie, by = "species") %>%
+  replace_na(list(total_marly = 0, total_melanie = 0)) %>%
+  mutate(
+    log2_fold_change = log2((total_melanie + 1) / (total_marly + 1)),
+    max_abundance = pmax(total_marly, total_melanie)
+  ) %>%
+  arrange(desc(abs(log2_fold_change)))
+
+# View top differences
+species_diff %>%
+  select(species, total_marly, total_melanie, log2_fold_change) %>%
+  slice_max(order_by = abs(log2_fold_change), n = 20)
+
+```
+
+Even the top 20 most "differentiated" species have log₂ fold changes < 0.0003 — basically no difference at all.
+
+
 ### Conclusion
 Both pipelines produce comparable community composition profiles.
 
@@ -461,4 +657,16 @@ structure.
 This supports robustness of EMU taxonomic assignments across filtering 
 strategies.
 
+We compared total species-level abundances across both filtering strategies and 
+found no biologically meaningful differences. The species detected were 
+identical between pipelines, and their relative abundances were extremely 
+consistent (all log₂ fold changes < 0.0003). This suggests that both filtering
+strategies produce equivalent outputs at the species level, validating the 
+robustness of the EMU pipeline under both stringent and lenient parameter settings.
+
+After evaluating two filtering strategies (a stringent ‘standard’ pipeline and 
+a more lenient one), we found both produced nearly identical taxonomic profiles 
+in terms of read depth, alpha diversity, rare taxa, and genus/species-level 
+detection. We selected the standard filtering approach (Marly) for final 
+analysis due to its conservative parameterization and strong reproducibility.
 

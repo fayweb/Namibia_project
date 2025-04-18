@@ -16,7 +16,7 @@ p <- ggplot(species_count, aes(x = Morphology_species, y = count, fill = Morphol
   labs(title = "Distribution of Rodent Species", x = "Species", y = "Count") +
   theme_minimal()
 
-#p
+p
 
 # Save plot
 ggsave("results/figures/species_distribution.png", p, width = 10, height = 7, dpi = 300)
