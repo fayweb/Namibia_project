@@ -121,8 +121,11 @@ figures_dir    <- file.path(results_dir, "figures")
 tables_dir     <- file.path(results_dir, "tables")
 scripts_dir    <- file.path(project_root, "scripts")
 
-# create vectors for selecting relevant columns in the downstream analysis
-# Define vector of trapping-relevant columns from rodent_data
+# ***********************************************************
+# Define Column Selection Vectors for Analysis
+# ***********************************************************
+
+# 📌 Trapping & Field Metadata Variables (rodent_data)
 trapping_vars <- c(
   "Latitude",
   "Longitude",
@@ -134,24 +137,48 @@ trapping_vars <- c(
   "Date"
 )
 
-# Define vector of barcode/sequencing-relevant columns
-barcode_vars <- c(
-  "conc_16s__PCR",
-  "barcode"
-)
+# ***********************************************************
+# 16S Sequencing Variables
+# ***********************************************************
 
-# Define vector of 16S EMU OTU + taxonomy result columns
+# 🧬 16S Barcode & Sequencing Metadata
+barcode_vars_16s <- c("barcode_16s", "conc_16s__PCR", "Gene")
+
+# 🧪 16S Taxonomic Assignments
 otu_16s_vars <- c(
   "tax_id",
-  "count_marly_16s",
-  "species_16s",
-  "genus_16s",
-  "family_16s",
-  "order_16s",
-  "class_16s",
-  "phylum_16s",
-  "superkingdom_16s"
+  "count_16s",
+  "species",
+  "genus",
+  "family",
+  "order",
+  "class",
+  "phylum",
+  "superkingdom"
 )
+
+# 🔬 Combined 16S Selection Vector
+microbiome_16s_vars <- c(barcode_vars_16s, otu_16s_vars)
+
+# ***********************************************************
+# 28S Sequencing Variables
+# ***********************************************************
+
+# 🧬 28S Barcode & Sequencing Metadata
+barcode_vars_28s <- c("barcode_28s")
+count_vars_28s   <- c("count_28s")
+metadata_vars_28s <- c("Date_28s_PCR", "Gene")
+
+# 🧪 28S Taxonomic Assignments (same structure as 16S)
+taxonomy_vars_shared <- c("tax_id", "species", "genus",
+                          "family", "order", "class",
+                          "phylum", "superkingdom")
+
+# 🔬 Combined 28S Selection Vector
+otu_28s_vars <- c(barcode_vars_28s, count_vars_28s,
+                  taxonomy_vars_shared, metadata_vars_28s)
+
+
 
 # ***********************************************************
 # Part 3: Data Cleaning - Rodent Field Data ----
@@ -179,7 +206,6 @@ source(file.path(scripts_dir, "preprocessing", "1_import_clean_field_data.R"))
 # ***********************************************************
 # Part 4: Taxonomic Processing - OTU & Phylogenetic Analysis ----
 # ***********************************************************
-
 #----------------------------------------------------------*
 #----------------------------------------------------------*
 # 4.1a: Rename OTU Columns Using Sample Metadata
@@ -217,15 +243,6 @@ source(
 # EMU OTU filtering strategies:
 #   - Marly's standard filtering
 #   - Melanie's lenient filtering
-#
-# The script performs:
-#   ▸ Read depth summaries
-#   ▸ Alpha diversity comparison (richness, Shannon)
-#   ▸ Rare taxa quantification
-#   ▸ Phylum-level taxonomic composition
-#   ▸ Rarefaction curve visualisation
-#   ▸ NMDS ordination (Bray-Curtis beta diversity)
-#
 # 📂 Outputs:
 #   ▸ HTML report:
 # Protocols/Data_processing/04b_compare_filtering_marly_vs_melanie.html
@@ -245,22 +262,55 @@ source(
 #----------------------------------------------------------*
 # Based on comparisons in 04b_compare_filtering_marly_vs_melanie.Rmd,
 # we selected Marly's standard filtering for all downstream microbiome analyses.
-
 # This script copies the final annotated OTU table and standardizes
 # its name for clarity and reproducibility.
-#
 # 📄 Script: Scripts/Preprocessing/04c_select_final_filtering_output.R
 # 📂 Outputs:
 #   - otu_taxonomy_metadata_final.csv
 #     (used for diversity, phyloseq, and downstream community analysis)
-message("\n🔹 Step 4.1e: Finalizing selection of Marly's filtered EMU output...")
-source(file.path(scripts_dir, "preprocessing", "04c_select_final_filtering_output.R"))
+message("\n🔹 Step 4.1e: Finalizing selection of
+        Marly's filtered EMU output...")
+source(file.path(scripts_dir, "preprocessing",
+                 "04c_select_final_filtering_output.R"))
+#----------------------------------------------------------*
+# 4.2: Integrate EMU 28S Output from Emanuel Heitlinger
+#----------------------------------------------------------*
+# Purpose:
+#   - Load 28S EMU output and sample metadata from Emanuel
+#   - Filter for rodent samples only
+#   - Join with rodent metadata
+#   - Annotate and prepare for parasite-focused analysis
+#
+# 📄 Script: Scripts/Preprocessing/05a_mouse_parasite_28s_analysis.R
+# 📂 Outputs:
+#   - rodent_data with merged 28S data
+#   - Used later for parasite diversity and re-clustering
+message("\n🔹 Step 4.2: Annotating 28S EMU output from Emanuel
+        and joining to rodent metadata...")
+source(file.path(scripts_dir, "preprocessing",
+                 "05a_mouse_parasite_28s_analysis.R"))
 
 
 
 
 
-# 4.1: Process OTU Table & Taxonomic Assignments
+
+
+
+
+
+
+
+
+
+
+# 4.1: Process OTU T
+
+
+
+
+
+able & Taxonomic Assignments
 #----------------------------------------------------------*
 #message("\n🔹 Step 4.1: Processing OTU & taxonomic data...")
 #source(file.path(scripts_dir, "taxonomy", "03_process_OTU_taxonomy.R"))

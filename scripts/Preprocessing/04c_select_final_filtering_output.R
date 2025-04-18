@@ -5,11 +5,16 @@ rm(otu_melanie_full)
 
 # 1. First keep original name so we can join
 otu_stripped <- otu_marly_full %>%
-  select(barcode, tax_id, count_marly, species, genus, family, order, class, phylum, superkingdom)
+  select(barcode, tax_id, count_marly, species, genus, family, order, class,
+         phylum, superkingdom)
 
 # 2. Join with rodent_data first (barcode is still available for matching)
 otu_joined <- otu_stripped %>%
   left_join(rodent_data, by = "barcode")
+
+Gene <- "16s"
+
+otu_joined <- cbind(otu_joined, Gene)
 
 # 3. Then rename columns for clarity
 rodent_data <- otu_joined %>%
