@@ -3,22 +3,26 @@
 # we are removing Melanie's lenient filtering strategy data
 rm(otu_melanie_full)
 
-# 1. Strip to counts + taxonomy
+# 1. First keep original name so we can join
 otu_stripped <- otu_marly_full %>%
-  select(barcode, tax_id, count_marly, species, genus, family, order, class,
-         phylum, superkingdom)
+  select(barcode, tax_id, count_marly, species, genus, family, order, class, phylum, superkingdom)
 
-otu_renamed <- otu_stripped %>%
-  rename_with(.fn = ~ paste0(.x, "_16s"), .cols = -c(barcode, tax_id))
-
-
-# 3. Join with rodent metadata
-rodent_data <- otu_renamed %>%
+# 2. Join with rodent_data first (barcode is still available for matching)
+otu_joined <- otu_stripped %>%
   left_join(rodent_data, by = "barcode")
+
+# 3. Then rename columns for clarity
+rodent_data <- otu_joined %>%
+  rename(
+    barcode_16s = barcode,
+    count_16s = count_marly
+    # Keep tax_id unsuffixed for unified use
+  )
+
 
 # 5. Sanity check
 message("✅ Final merged dataset with 16S columns ready: ",
         nrow(rodent_data), " rows.")
 
 
-rm(otu_renamed, otu_stripped, otu_marly_full)
+rm(otu_joined, otu_stripped, otu_marly_full, barcode_ref)
