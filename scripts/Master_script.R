@@ -77,11 +77,14 @@
 #   - 16S PCR plate metadata:
 #   data/raw/16S_sequencing/16s_PCR/20231123_PCR_final.xlsx
 #   - Opentrons robot buffer input:
-#         data/raw/16S_sequencing/16s_PCR/pipetingrobot_muster/Buffer CSV_19-03-2024_namibia_plate16s.csv
+#         data/raw/16S_sequencing/16s_PCR/pipetingrobot_muster/Buffer
+#CSV_19-03-2024_namibia_plate16s.csv
 #   - Opentrons robot sample input:
-#         data/raw/16S_sequencing/16s_PCR/pipetingrobot_muster/Sample CSV_19-03-2024_namibia_plate16s.csv
+#         data/raw/16S_sequencing/16s_PCR/pipetingrobot_muster/Sample
+#CSV_19-03-2024_namibia_plate16s.csv
 #   - Sample pooling design:
-#                data/raw/16S_sequencing/16s_PCR/pipetingrobot_muster/Sample_pooling_CSV_03-04-2024.csv
+#                data/raw/16S_sequencing/16s_PCR/pipetingrobot_muster/
+#Sample_pooling_CSV_03-04-2024.csv
 # ***********************************************************
 # Part 1: Set Standard Settings & Load Libraries ----
 # ***********************************************************
@@ -100,7 +103,7 @@ pacman::p_load(
   corrplot, patchwork, ggrepel, RColorBrewer, pheatmap, caret,
   randomForest, rfUtilities, optimx, ggpubr, FactoMineR, factoextra,
   leaflet, kableExtra, broom, magrittr, data.table, sf, rnaturalearth,
-  RColorBrewer, tmap, mapview, cowplot, magick, readxl, qgraph, vegan, ggvenn
+  RColorBrewer, tmap, mapview, cowplot, magick, readxl, qgraph, vegan, ggvenn,
 )
 
 # ***********************************************************
@@ -250,9 +253,11 @@ source(
 # Protocols/Data_processing/Comparison_filtering_strategies_Marly_Melanie.pdf
 #
 # 4.1d: Compare filtering strategies and save report to protocols folder
-#message("\n🔹 Step 4.1d: Comparing filtering approaches from Marly and Melanie...")
+#message("\n🔹
+#Step 4.1d: Comparing filtering approaches from Marly and Melanie...")
 #rmarkdown::render(
- # input = file.path(scripts_dir, "preprocessing", "04b_compare_filtering_marly_vs_melanie.Rmd"),
+ # input = file.path(scripts_dir, "preprocessing",
+#"04b_compare_filtering_marly_vs_melanie.Rmd"),
   #knit_root_dir = project_root,
 #  output_file = "04b_compare_filtering_marly_vs_melanie.html",
  # output_dir = file.path(project_root, "Protocols", "Data_processing")
@@ -291,6 +296,30 @@ source(file.path(scripts_dir, "preprocessing",
                  "05a_mouse_parasite_28s_analysis.R"))
 
 
+# ***********************************************************
+# Part 5: Microbiome Community Analysis - 16S & 28S ----
+# ***********************************************************
+
+# 5.1: Construct Phyloseq Object (16S) ------------------------
+source(file.path(scripts_dir, "Analysis", "0_construct_phyloseq.R"))
+
+# 5.2: Decontamination (Blanks & Controls) -------------------
+source(file.path(scripts_dir, "Analysis", "1_decontamination_separates.R"))
+
+# 5.3: Preprocessing / Filtering -----------------------------
+source(file.path(scripts_dir, "Analysis", "2_pre-processing_new.R"))
+
+# 5.4: Alpha Diversity ----------------------------------------
+source(file.path(scripts_dir, "Analysis", "3_alpha_diversity_new.R"))
+
+# 5.5: Beta Diversity -----------------------------------------
+source(file.path(scripts_dir, "Analysis", "4_beta-diversity_nwe.R"))
+
+# 5.6: Taxonomic Barplots -------------------------------------
+source(file.path(scripts_dir, "Analysis", "5_compositional_plots.R"))
+
+# 5.7: Heatmap of Taxa ----------------------------------------
+source(file.path(scripts_dir, "Analysis", "5_heatmap.R"))
 
 
 
@@ -304,22 +333,28 @@ source(file.path(scripts_dir, "preprocessing",
 
 
 
-# 4.1: Process OTU T
 
 
 
 
 
-able & Taxonomic Assignments
-#----------------------------------------------------------*
-#message("\n🔹 Step 4.1: Processing OTU & taxonomic data...")
-#source(file.path(scripts_dir, "taxonomy", "03_process_OTU_taxonomy.R"))
 
-#----------------------------------------------------------*
-# 4.2: Perform Diversity Analysis
-#----------------------------------------------------------*
-#message("\n🔹 Step 4.2: Running diversity analysis...")
-#source(file.path(scripts_dir, "diversity", "04_diversity_analysis.R"))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # ***********************************************************
 # Part 5: Generate Figures & Reports ----

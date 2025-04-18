@@ -31,3 +31,27 @@ message("✅ Final merged dataset with 16S columns ready: ",
 
 
 rm(otu_joined, otu_stripped, otu_marly_full, barcode_ref)
+
+
+# ***********************************************************
+# Step 4.1f: Save Table for Phyloseq Construction
+# ***********************************************************
+
+# Select only rows with 16S counts
+otu_16s_phyloseq <- rodent_data %>%
+  filter(!is.na(count_16s)) %>%
+  select(
+    Sample_ID,
+    tax_id,
+    count_16s,
+    species, genus, family, order, class, phylum, superkingdom,
+    all_of(trapping_vars),
+    conc_16s__PCR, Gene
+  )
+
+write_csv(
+  otu_16s_phyloseq,
+  file.path(processed_data, "EMU_output", "marly_standard_filtering", "otu_16s_for_phyloseq.csv")
+)
+
+message("✅ Saved 16S dataset for phyloseq construction: otu_16s_for_phyloseq.csv")
