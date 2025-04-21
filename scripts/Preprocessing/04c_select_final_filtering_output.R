@@ -1,52 +1,62 @@
-# 04c_select_final_filtering_output.R
-# Purpose: Merge selected EMU output (Marly) with full rodent metadata
-# we are removing Melanie's lenient filtering strategy data
+# ***********************************************************
+# Script: 04c_select_final_filtering_output.R
+# Purpose: Finalize EMU Marly output and save for phyloseq input
+# ***********************************************************
+
+message("📌 Finalizing Marly's EMU 16S output for phyloseq...")
+
+# -----------------------------------------------------------
+# Step 1: Discard Melanie's OTU table
+# -----------------------------------------------------------
 rm(otu_melanie_full)
 
-# 1. First keep original name so we can join
+# -----------------------------------------------------------
+# Step 2: Strip annotated table to essential OTU + taxonomy columns
+# -----------------------------------------------------------
 otu_stripped <- otu_marly_full %>%
-  select(barcode, tax_id, count_marly, species, genus, family, order, class,
-         phylum, superkingdom)
+  dplyr::select(
+    barcode, tax_id, count_marly,
+    species, genus, family, order, class, phylum, superkingdom
+  )
 
-# 2. Join with rodent_data first (barcode is still available for matching)
+# -----------------------------------------------------------
+# Step 3: Merge with rodent metadata
+# -----------------------------------------------------------
 otu_joined <- otu_stripped %>%
-  left_join(rodent_data, by = "barcode")
+  left_join(rodent_data, by = "barcode") %>%
+  mutate(Gene = "16s")
 
-Gene <- "16s"
-
-otu_joined <- cbind(otu_joined, Gene)
-
-# 3. Then rename columns for clarity
+# -----------------------------------------------------------
+# Step 4: Rename for clarity
+# -----------------------------------------------------------
 rodent_data <- otu_joined %>%
   rename(
     barcode_16s = barcode,
     count_16s = count_marly
-    # Keep tax_id unsuffixed for unified use
   )
 
+# -----------------------------------------------------------
+# Step 5: Create unique ID for sample-barcode combo
+# -----------------------------------------------------------
+rodent_data <- rodent_data %>%
+  mutate(Sample_ID_phyloseq = paste(Sample_ID, barcode_16s, sep = "__"))
 
-# 5. Sanity check
-message("✅ Final merged dataset with 16S columns ready: ",
+message("✅ Final merged dataset with 16S annotations and barcode IDs: ",
         nrow(rodent_data), " rows.")
 
-
-rm(otu_joined, otu_stripped, otu_marly_full, barcode_ref)
-
-
-# ***********************************************************
-# Step 4.1f: Save Table for Phyloseq Construction
-# ***********************************************************
-
-# Select only rows with 16S counts
+# -----------------------------------------------------------
+# Step 6: Export table for phyloseq
+# -----------------------------------------------------------
 otu_16s_phyloseq <- rodent_data %>%
   filter(!is.na(count_16s)) %>%
-  select(
-    Sample_ID,
+  dplyr::select(
+    Sample_ID_phyloseq,  # <- unique sample-barcode combo
     tax_id,
     count_16s,
     species, genus, family, order, class, phylum, superkingdom,
     all_of(trapping_vars),
-    conc_16s__PCR, Gene
+    conc_16s__PCR, Gene,
+    Sample_ID, barcode_16s, is_control, sample_or_control  # keep traceability
   )
 
 write_csv(
@@ -54,4 +64,4 @@ write_csv(
   file.path(processed_data, "EMU_output", "marly_standard_filtering", "otu_16s_for_phyloseq.csv")
 )
 
-message("✅ Saved 16S dataset for phyloseq construction: otu_16s_for_phyloseq.csv")
+message("💾 Saved cleaned 16S dataset for phyloseq construction.")
