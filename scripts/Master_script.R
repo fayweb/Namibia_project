@@ -104,6 +104,7 @@ pacman::p_load(
   randomForest, rfUtilities, optimx, ggpubr, FactoMineR, factoextra,
   leaflet, kableExtra, broom, magrittr, data.table, sf, rnaturalearth,
   RColorBrewer, tmap, mapview, cowplot, magick, readxl, qgraph, vegan, ggvenn,
+  decontam
 )
 
 # ***********************************************************
