@@ -65,3 +65,22 @@ write_csv(
 )
 
 message("💾 Saved cleaned 16S dataset for phyloseq construction.")
+
+# -----------------------------------------------------------
+# Step 7: Final cleanup – remove unneeded objects
+# -----------------------------------------------------------
+rm(
+  barcode_ref,
+  otu_stripped,
+  otu_joined,
+  otu_marly_full,
+  otu_marly_path,
+  otu_16s_phyloseq,
+  tax_marly_path,
+  tax_melanie_path,
+  tax_marly,
+  tax_melanie
+)
+
+# You may choose to keep `rodent_data`, `trapping_vars` if used downstream
+message("🧹 Environment cleaned. Ready for phyloseq!")
