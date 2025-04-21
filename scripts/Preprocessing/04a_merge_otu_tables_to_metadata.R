@@ -3,9 +3,9 @@
 # Purpose: Integrate Marly's and Melanie's filtered OTU tables into rodent_data
 # Author: Fay Webster
 # ***********************************************************
-# Purpose: Join OTU counts from Marly's and Melanie's EMU outputs
+# This script joins OTU counts from Marly's and Melanie's EMU outputs
 # into a single long-format table for easy comparison.
-# This includes:
+# Includes:
 #   - tax_id (unique taxa)
 #   - barcode (sequencing ID)
 #   - count_marly (standard filtering)
@@ -14,44 +14,42 @@
 # Inputs:
 #   - OTU count tables:     data/processed/EMU_output/[...]/otu_counts_*.tsv
 #   - Taxonomy tables:      data/processed/EMU_output/[...]/taxonomy_*.tsv
-#   - Barcode list:         barcode_ref$barcode
+#   - Rodent metadata (already integrated with barcode info)
+# ----------------------------------------------------------*
 
+message("📥 Loading EMU OTU tables from Marly and Melanie...")
 
-# Paths to files
-otu_marly_path <- "data/processed/EMU_output/marly_standard_filtering/otu_counts_marly_standard.tsv"
-otu_melanie_path <- "data/processed/EMU_output/melanie_lenient_filtering/otu_counts_melanie_lenient.tsv"
+# Define paths
+otu_marly_path <- file.path(processed_data, "EMU_output", "marly_standard_filtering", "otu_counts_marly_standard.tsv")
+otu_melanie_path <- file.path(processed_data, "EMU_output", "melanie_lenient_filtering", "otu_counts_melanie_lenient.tsv")
 
+# Read tables
+otu_marly   <- read_tsv(otu_marly_path, show_col_types = FALSE)
+otu_melanie <- read_tsv(otu_melanie_path, show_col_types = FALSE)
 
-# Load
-otu_marly <- read_tsv(otu_marly_path)
-otu_melanie <- read_tsv(otu_melanie_path)
+# ✅ Keep ALL barcodes (including controls and replicates)
+valid_barcodes <- rodent_data %>%
+  filter(!is.na(barcode)) %>%
+  distinct(barcode) %>%
+  pull()
 
-
-# Load barcode metadata (already cleaned and integrated into rodent_data)
-barcode_vector <- unique(rodent_data$barcode)
-
-# Clean and pivot Marly's OTU table
+# 📊 Pivot OTU tables to long format and match barcodes
 otu_marly_long <- otu_marly %>%
   rename_with(~ str_remove(.x, "e17a8f2887894f8d7becdbeaafbc97db14bc8e66_EXP-PBC096_")) %>%
   pivot_longer(-tax_id, names_to = "barcode", values_to = "count_marly") %>%
-  filter(barcode %in% barcode_vector)
+  filter(barcode %in% valid_barcodes)
 
-# Clean and pivot Melanie's OTU table
 otu_melanie_long <- otu_melanie %>%
   rename_with(~ str_remove(.x, "e17a8f2887894f8d7becdbeaafbc97db14bc8e66_EXP-PBC096_")) %>%
   pivot_longer(-tax_id, names_to = "barcode", values_to = "count_melanie") %>%
-  filter(barcode %in% barcode_vector)
+  filter(barcode %in% valid_barcodes)
 
-
-
-
-
-message("✅ Merged long-format OTU counts from Marly & Melanie saved to: data/processed/EMU_output/otu_counts_long_combined.csv")
+message("✅ Merged long-format OTU counts from Marly & Melanie.")
 
 #----------------------------------------------------------*
-# Step 4.1c: Load EMU Taxonomy Tables (Marly vs Melanie)
+# Step 4.1c: Load EMU Taxonomy Tables
 #----------------------------------------------------------*
-message("🔹 Loading taxonomy tables for Marly and Melanie...")
+message("🔹 Loading taxonomy tables...")
 
 tax_marly_path   <- file.path(processed_data, "EMU_output", "marly_standard_filtering", "taxonomy_marly_standard.tsv")
 tax_melanie_path <- file.path(processed_data, "EMU_output", "melanie_lenient_filtering", "taxonomy_melanie_lenient.tsv")
@@ -62,7 +60,7 @@ tax_melanie <- read_tsv(tax_melanie_path, show_col_types = FALSE)
 #----------------------------------------------------------*
 # Step 4.1d: Merge OTU counts with taxonomy
 #----------------------------------------------------------*
-message("🔹 Merging OTU counts with taxonomy tables...")
+message("🔹 Annotating OTU tables with taxonomy...")
 
 otu_marly_annotated <- otu_marly_long %>%
   left_join(tax_marly, by = "tax_id")
@@ -71,9 +69,9 @@ otu_melanie_annotated <- otu_melanie_long %>%
   left_join(tax_melanie, by = "tax_id")
 
 #----------------------------------------------------------*
-# Step 4.1e: Merge annotated OTU + taxonomy with rodent metadata
+# Step 4.1e: Merge annotated OTUs with rodent metadata
 #----------------------------------------------------------*
-message("🔹 Merging annotated OTU counts with rodent metadata...")
+message("🔹 Merging annotated OTUs with rodent metadata...")
 
 otu_marly_full <- otu_marly_annotated %>%
   left_join(rodent_data, by = "barcode")
@@ -81,22 +79,25 @@ otu_marly_full <- otu_marly_annotated %>%
 otu_melanie_full <- otu_melanie_annotated %>%
   left_join(rodent_data, by = "barcode")
 
-
 #----------------------------------------------------------*
-# Step 4.1f: Save integrated datasets
+# Step 4.1f: Save Output
 #----------------------------------------------------------*
-message("💾 Saving merged OTU + taxonomy + metadata tables...")
+message("💾 Saving annotated OTU + taxonomy + metadata tables...")
 
 write_csv(otu_marly_full,
-          file.path(processed_data, "EMU_output", "marly_standard_filtering",
-                    "otu_taxonomy_metadata_marly.csv"))
+          file.path(processed_data, "EMU_output", "marly_standard_filtering", "otu_taxonomy_metadata_marly.csv"))
 
 write_csv(otu_melanie_full,
-          file.path(processed_data, "EMU_output", "melanie_lenient_filtering",
-                    "otu_taxonomy_metadata_melanie.csv"))
+          file.path(processed_data, "EMU_output", "melanie_lenient_filtering", "otu_taxonomy_metadata_melanie.csv"))
 
-# remove unecessary files
-rm(otu_marly, otu_marly_annotated, otu_marly_long, otu_marly_path,
-   otu_melanie, otu_melanie_annotated, otu_melanie_long, otu_melanie_path,
-   tax_marly, tax_melanie)
+# 🧹 Clean up
+rm(
+  otu_marly, otu_melanie,
+  otu_marly_long, otu_melanie_long,
+  otu_marly_annotated, otu_melanie_annotated,
+  tax_marly, tax_melanie,
+  otu_marly_path, otu_melanie_path
+)
+
+message("🎉 Done! OTU tables successfully merged and saved.")
 
