@@ -104,7 +104,7 @@ pacman::p_load(
   randomForest, rfUtilities, optimx, ggpubr, FactoMineR, factoextra,
   leaflet, kableExtra, broom, magrittr, data.table, sf, rnaturalearth,
   RColorBrewer, tmap, mapview, cowplot, magick, readxl, qgraph, vegan, ggvenn,
-  decontam
+  decontam, microbiome
 )
 
 # ***********************************************************
@@ -308,13 +308,18 @@ source(file.path(scripts_dir, "Analysis", "0_construct_phyloseq.R"))
 source(file.path(scripts_dir, "Analysis", "1_decontamination_separates.R"))
 
 # 5.3: Preprocessing / Filtering -----------------------------
-source(file.path(scripts_dir, "Analysis", "2_pre-processing_new.R"))
+source(file.path(scripts_dir, "Analysis", "2_quality_summary_stats.R"))
 
 # 5.4: Alpha Diversity ----------------------------------------
-source(file.path(scripts_dir, "Analysis", "3_alpha_diversity_new.R"))
+source(file.path(scripts_dir, "Analysis", "3_alpha_diversity.R"))
+
+
+
+########## CONTINUE HERE
+
 
 # 5.5: Beta Diversity -----------------------------------------
-source(file.path(scripts_dir, "Analysis", "4_beta-diversity_nwe.R"))
+source(file.path(scripts_dir, "Analysis", "4_beta-diversity.R"))
 
 # 5.6: Taxonomic Barplots -------------------------------------
 source(file.path(scripts_dir, "Analysis", "5_compositional_plots.R"))
