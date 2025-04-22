@@ -101,5 +101,6 @@ message("💾 Saved decontaminated phyloseq object to: ", decont_output_path)
 # ------------------------------------------------------------
 # Step 7: Clean up
 # ------------------------------------------------------------
-rm(contam_df, df.pa, ps.pa, ps.pa.neg, ps.pa.pos, contaminant_taxa, p1, p2)
+rm(contam_df, df.pa, ps.pa, ps.pa.neg, ps.pa.pos, contaminant_taxa, p1, p2, ps,
+   ps_decont)
 message("🧹 Cleaned up temporary objects.")
