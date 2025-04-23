@@ -48,7 +48,7 @@ draw(heatmapAnnoFunction)
 # ------------------------------------------------------------
 # Step 5: Abundance Boxplot Annotation
 # ------------------------------------------------------------
-psq <- tax_fix(psq)  # Ensure that taxonomic issues are fixed
+#psq <- tax_fix(psq)  # Ensure that taxonomic issues are fixed
 heatmapAnnoFunction <- anno_tax_box()(data = psq, which = "column", taxa = taxa)
 
 # Draw the abundance boxplot

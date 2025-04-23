@@ -14,12 +14,15 @@ ps <- readRDS(file.path(processed_data, "phyloseq_16s_decontaminated.rds"))
 ps <- prune_taxa(taxa_sums(ps) > 0, ps)
 
 read_summary <- summary(sample_sums(ps))
-message("🧬 Read depth range: ", paste0(range(sample_sums(ps)), collapse = " - "))
+message("🧬 Read depth range: ", paste0(range(sample_sums(ps)),
+
+                                        collapse = " - "))
 
 # ------------------------------------------------------------
 # Step 2: Rarefaction Curve (Sample-wise)
 # ------------------------------------------------------------
-plot_rarefaction_with_filter <- function(physeq_obj, min_sum = 10, rarefy_to = 20000) {
+plot_rarefaction_with_filter <- function(physeq_obj, min_sum = 10,
+                                         rarefy_to = 20000) {
   otu_tab <- t(as(otu_table(physeq_obj), "matrix"))
   metadata <- data.frame(sample_data(physeq_obj))
 
@@ -81,15 +84,19 @@ print(dna_conc_summary)
 # ------------------------------------------------------------
 # Step 4: Plot median DNA concentration
 # ------------------------------------------------------------
-p_dna_conc <- ggplot(sample_dat_info, aes(x = sample_or_control, y = conc_16s__PCR)) +
-  geom_boxplot(aes(fill = sample_or_control), alpha = 0.6, outlier.shape = NA, width = 0.5) +
+p_dna_conc <- ggplot(sample_dat_info, aes(x = sample_or_control,
+                                          y = conc_16s__PCR)) +
+  geom_boxplot(aes(fill = sample_or_control), alpha = 0.6,
+               outlier.shape = NA, width = 0.5) +
   theme_minimal() +
-  labs(x = "Sample Type", y = "DNA Concentration (PCR)", title = "DNA Concentration by Sample Type") +
+  labs(x = "Sample Type", y = "DNA Concentration (PCR)",
+       title = "DNA Concentration by Sample Type") +
   theme(axis.text = element_text(size = 12),
         axis.title = element_text(size = 14),
         legend.position = "none")
 
-ggsave(filename = file.path(results_dir, "Figures", "16S_QC", "dna_concentration_by_sample.jpeg"),
+ggsave(filename = file.path(results_dir, "Figures", "16S_QC",
+                            "dna_concentration_by_sample.jpeg"),
        plot = p_dna_conc, width = 6, height = 4, dpi = 300)
 
 # ************************************************************
@@ -106,7 +113,9 @@ message("📈 Calculating alpha diversity (Shannon, Observed, InvSimpson)...")
 otu_table(ps) <- otu_table(round(otu_table(ps)), taxa_are_rows = TRUE)
 
 # Compute alpha diversity metrics
-alpha_df <- phyloseq::estimate_richness(ps, measures = c("Observed", "Shannon", "InvSimpson")) %>%
+alpha_df <- phyloseq::estimate_richness(ps,
+                                        measures =
+                                          c("Observed", "Shannon", "InvSimpson")) %>%
   tibble::rownames_to_column("Sample_ID") %>%
   left_join(sample_data(ps) %>%
               data.frame() %>%
@@ -116,10 +125,12 @@ alpha_df <- phyloseq::estimate_richness(ps, measures = c("Observed", "Shannon", 
 # Note: estimate_richness warning about missing singletons is expected
 # because the dataset has been decontaminated and filtered
 # Create folder if it doesn't exist
-dir.create(file.path(results_dir, "Tables", "16S_QC"), recursive = TRUE, showWarnings = FALSE)
+dir.create(file.path(results_dir, "Tables", "16S_QC"),
+           recursive = TRUE, showWarnings = FALSE)
 
 # Save alpha diversity table
-write_csv(alpha_df, file.path(results_dir, "Tables", "16S_QC", "alpha_diversity_metrics.csv"))
+write_csv(alpha_df, file.path(results_dir, "Tables", "16S_QC",
+                              "alpha_diversity_metrics.csv"))
 
 
 # Panel plot: diversity metrics per sample type
@@ -142,16 +153,79 @@ p_alpha <- alpha_df %>%
   )
 
 # Save plot
-ggsave(file.path(results_dir, "Figures", "16S_QC", "alpha_diversity_panel.jpeg"),
+ggsave(file.path(results_dir, "Figures", "16S_QC",
+                 "alpha_diversity_panel.jpeg"),
        plot = p_alpha, width = 8, height = 5, dpi = 300)
 
-message("📈 Saved alpha diversity panel to: Figures/16S_QC/alpha_diversity_panel.jpeg")
+message(
+  "📈 Saved alpha diversity panel to: Figures/16S_QC/alpha_diversity_panel.jpeg")
 
 
 # ------------------------------------------------------------
-# Step 5: Clean environment
+# Step 5: Visualize Alpha Diversity (Shannon + Others)
+# ------------------------------------------------------------
+
+# Round OTU table to integers (required by estimate_richness)
+otu_table(ps) <- otu_table(round(otu_table(ps)), taxa_are_rows = TRUE)
+
+# Compute alpha diversity metrics
+alpha_df <- phyloseq::estimate_richness(
+  ps, measures =
+    c("Observed", "Shannon", "InvSimpson")) %>%
+  tibble::rownames_to_column("Sample_ID") %>%
+  left_join(sample_data(ps) %>%
+              data.frame() %>%
+              tibble::rownames_to_column("Sample_ID"),
+            by = "Sample_ID")
+
+# Note: estimate_richness warning about missing singletons is expected
+# because the dataset has been decontaminated and filtered
+# Create folder if it doesn't exist
+dir.create(file.path(results_dir, "Tables", "16S_QC"),
+           recursive = TRUE, showWarnings = FALSE)
+
+# Save alpha diversity table
+write_csv(alpha_df, file.path(results_dir, "Tables", "16S_QC",
+                              "alpha_diversity_metrics.csv"))
+
+# ************************************************************
+# Compare alpha diversity by Rodent Species and Trapping Location
+# ************************************************************
+
+# Boxplot: Diversity metrics per species
+p_alpha_species <- alpha_df %>%
+  ggplot(aes(x = Morphology_species, y = Shannon, fill = Morphology_species)) +
+  geom_boxplot(alpha = 0.6, outlier.shape = NA) +
+  theme_minimal() +
+  labs(title = "Alpha Diversity (Shannon) by Species",
+       x = "Rodent Species", y = "Shannon Diversity Index") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+# Save species diversity plot
+ggsave(file.path(results_dir, "Figures", "16S_QC",
+                 "alpha_diversity_species.jpeg"),
+       plot = p_alpha_species, width = 8, height = 5, dpi = 300)
+
+# Boxplot: Diversity metrics per trapping location
+p_alpha_location <- alpha_df %>%
+  ggplot(aes(x = Location_type, y = Shannon, fill = Location_type)) +
+  geom_boxplot(alpha = 0.6, outlier.shape = NA) +
+  theme_minimal() +
+  labs(title = "Alpha Diversity (Shannon) by Trapping Location",
+       x = "Trapping Location", y = "Shannon Diversity Index") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+# Save location diversity plot
+ggsave(file.path(results_dir, "Figures", "16S_QC",
+                 "alpha_diversity_location.jpeg"),
+       plot = p_alpha_location, width = 8, height = 5, dpi = 300)
+
+message("📈 Saved alpha diversity comparison plots by species and location.")
+
+# ------------------------------------------------------------
+# Step 6: Clean environment
 ## ------------------------------------------------------------
 rm(ps, read_summary, sample_dat_info, dna_conc_summary,
-   p_dna_conc, plot_rarefaction_with_filter, alpha_df, p_alpha)
+   p_dna_conc, p_alpha_species, p_alpha_location, alpha_df)
 
 message("🧹 Cleaned up temporary objects.")
