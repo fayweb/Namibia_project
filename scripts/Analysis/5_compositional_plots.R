@@ -52,6 +52,9 @@ ps2 <- ps2 %>%
                        "Lactobacillus", "Neisseria", "Parabacteroides", "Paracoccus", "Salmonella")) %>%
   phyloseq_validate()
 
+cleaned_ps2_path <- file.path(processed_data, "phyloseq_16s_cleaned_genera.rds")
+saveRDS(ps2, file = cleaned_ps2_path)
+
 # ------------------------------------------------------------
 # Step 5: Create compositional barplot at the Genus level
 # ------------------------------------------------------------
@@ -76,7 +79,7 @@ if ("genus" %in% rank_names(ps2)) {
 # ------------------------------------------------------------
 
 # Remove unnecessary objects from the environment to free up memory
-rm(list = c("ps", "ps2", "tax_df", "p_compositional"))
+rm(list = c("ps", "tax_df", "p_compositional", "ps2"))
 
 # Optional: If there are any other temporary objects you used that are not needed further
 # You can add them to the list like this:

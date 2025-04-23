@@ -104,7 +104,8 @@ pacman::p_load(
   randomForest, rfUtilities, optimx, ggpubr, FactoMineR, factoextra,
   leaflet, kableExtra, broom, magrittr, data.table, sf, rnaturalearth,
   RColorBrewer, tmap, mapview, cowplot, magick, readxl, qgraph, vegan, ggvenn,
-  decontam, microbiome, corncob, scales, ggsci, microViz, ggraph, ggtext)
+  decontam, microbiome, corncob, scales, ggsci, microViz, ggraph, ggtext,
+  ComplexHeatmap)
 
 #microbiomAnalysis
 
@@ -193,7 +194,7 @@ otu_28s_vars <- c(barcode_vars_28s, count_vars_28s,
 # 3.1: Import & Clean Rodent Field Data
 #----------------------------------------------------------*
 message("\n🔹 Step 3.1: Cleaning rodent field data...")
-source(file.path(scripts_dir, "preprocessing", "1_import_clean_field_data.R"))
+if (1) source(file.path(scripts_dir, "preprocessing", "1_import_clean_field_data.R"))
 
 #----------------------------------------------------------*
 # 3.1a: Nanodrop DNA Quality Assessment in the Field
@@ -216,7 +217,7 @@ source(file.path(scripts_dir, "preprocessing", "1_import_clean_field_data.R"))
 # 4.1a: Rename OTU Columns Using Sample Metadata
 #----------------------------------------------------------*
 message("\n🔹 Step 4.1a: Linking barcode names to rodent data frame")
-source(file.path(scripts_dir, "preprocessing", "02_link_barcode_to_metadata.R"))
+if (1) source(file.path(scripts_dir, "preprocessing", "02_link_barcode_to_metadata.R"))
 #----------------------------------------------------------*
 # 4.1b: Renamed EMU OTU Tables - Marly vs Melanie
 #----------------------------------------------------------*
@@ -239,7 +240,7 @@ source(file.path(scripts_dir, "preprocessing", "02_link_barcode_to_metadata.R"))
 #   - otu_taxonomy_metadata_melanie.csv (lenient filtering)
 message(
   "\n🔹 Step 4.1c: Integrating OTU counts with taxonomy and rodent metadata...")
-source(
+if (1) source(
   file.path(scripts_dir, "preprocessing", "04a_merge_otu_tables_to_metadata.R"))
 #----------------------------------------------------------*
 # 4.1d: Compare EMU Filtering Pipelines
@@ -277,7 +278,7 @@ source(
 #     (used for diversity, phyloseq, and downstream community analysis)
 message("\n🔹 Step 4.1e: Finalizing selection of
         Marly's filtered EMU output...")
-source(file.path(scripts_dir, "preprocessing",
+if (1) source(file.path(scripts_dir, "preprocessing",
                  "04c_select_final_filtering_output.R"))
 #----------------------------------------------------------*
 # 4.2: Integrate EMU 28S Output from Emanuel Heitlinger
@@ -294,7 +295,7 @@ source(file.path(scripts_dir, "preprocessing",
 #   - Used later for parasite diversity and re-clustering
 message("\n🔹 Step 4.2: Annotating 28S EMU output from Emanuel
         and joining to rodent metadata...")
-source(file.path(scripts_dir, "preprocessing",
+if (1) source(file.path(scripts_dir, "preprocessing",
                  "05a_mouse_parasite_28s_analysis.R"))
 
 
@@ -306,20 +307,20 @@ source(file.path(scripts_dir, "preprocessing",
 source(file.path(scripts_dir, "Analysis", "0_construct_phyloseq.R"))
 
 # 5.2: Decontamination (Blanks & Controls) -------------------
-source(file.path(scripts_dir, "Analysis", "1_decontamination_separates.R"))
+if (0) source(file.path(scripts_dir, "Analysis", "1_decontamination_separates.R"))
 
 # 5.3: Preprocessing / Filtering -----------------------------
-source(file.path(scripts_dir, "Analysis", "2_quality_summary_stats.R"))
+if (0) source(file.path(scripts_dir, "Analysis", "2_quality_summary_stats.R"))
 
 # 5.4: Alpha Diversity ----------------------------------------
-source(file.path(scripts_dir, "Analysis", "3_alpha_diversity.R"))
+if (0) source(file.path(scripts_dir, "Analysis", "3_alpha_diversity.R"))
 
 # 5.5: Beta Diversity -----------------------------------------
-source(file.path(scripts_dir, "Analysis", "04a_beta_distance_ordination.R"))
+if (0) source(file.path(scripts_dir, "Analysis", "04a_beta_distance_ordination.R"))
 source(file.path(scripts_dir, "Analysis", "04b_beta_pca_clr_taxa.R"))
 
 # 5.6: Taxonomic Barplots -------------------------------------
-source(file.path(scripts_dir, "Analysis", "5_compositional_plots.R"))
+if (1) source(file.path(scripts_dir, "Analysis", "5_compositional_plots.R"))
 
 
 
