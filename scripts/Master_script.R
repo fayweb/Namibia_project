@@ -304,7 +304,7 @@ if (1) source(file.path(scripts_dir, "preprocessing",
 # ***********************************************************
 
 # 5.1: Construct Phyloseq Object (16S) ------------------------
-source(file.path(scripts_dir, "Analysis", "0_construct_phyloseq.R"))
+if (0) source(file.path(scripts_dir, "Analysis", "0_construct_phyloseq.R"))
 
 # 5.2: Decontamination (Blanks & Controls) -------------------
 if (0) source(file.path(scripts_dir, "Analysis", "1_decontamination_separates.R"))
@@ -320,16 +320,10 @@ if (0) source(file.path(scripts_dir, "Analysis", "04a_beta_distance_ordination.R
 source(file.path(scripts_dir, "Analysis", "04b_beta_pca_clr_taxa.R"))
 
 # 5.6: Taxonomic Barplots -------------------------------------
-if (1) source(file.path(scripts_dir, "Analysis", "5_compositional_plots.R"))
-
-
-
-
-
-
+if (0) source(file.path(scripts_dir, "Analysis", "5_compositional_plots.R"))
 
 # 5.7: Heatmap of Taxa ----------------------------------------
-source(file.path(scripts_dir, "Analysis", "5_heatmap.R"))
+if (1) source(file.path(scripts_dir, "Analysis", "5_heatmap.R"))
 
 
 
