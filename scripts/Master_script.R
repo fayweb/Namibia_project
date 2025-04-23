@@ -323,9 +323,7 @@ source(file.path(scripts_dir, "Analysis", "04b_beta_pca_clr_taxa.R"))
 if (0) source(file.path(scripts_dir, "Analysis", "5_compositional_plots.R"))
 
 # 5.7: Heatmap of Taxa ----------------------------------------
-if (1) source(file.path(scripts_dir, "Analysis", "5_heatmap.R"))
-
-
+if (0) source(file.path(scripts_dir, "Analysis", "6_heatmap_microbiome.R"))
 
 
 
