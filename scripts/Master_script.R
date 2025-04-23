@@ -104,7 +104,9 @@ pacman::p_load(
   randomForest, rfUtilities, optimx, ggpubr, FactoMineR, factoextra,
   leaflet, kableExtra, broom, magrittr, data.table, sf, rnaturalearth,
   RColorBrewer, tmap, mapview, cowplot, magick, readxl, qgraph, vegan, ggvenn,
-  decontam, microbiome, microViz, microbiomeAnalysis, ggraph, ggtext, corncob)
+  decontam, microbiome, corncob, scales, ggsci, microViz, ggraph, ggtext)
+
+#microbiomAnalysis
 
 # ***********************************************************
 # Part 2: Define Project File Paths ----
@@ -311,18 +313,19 @@ source(file.path(scripts_dir, "Analysis", "2_quality_summary_stats.R"))
 
 # 5.4: Alpha Diversity ----------------------------------------
 source(file.path(scripts_dir, "Analysis", "3_alpha_diversity.R"))
+
 # 5.5: Beta Diversity -----------------------------------------
 source(file.path(scripts_dir, "Analysis", "04a_beta_distance_ordination.R"))
 source(file.path(scripts_dir, "Analysis", "04b_beta_pca_clr_taxa.R"))
 
-
-
-
-
-## continue here
-
 # 5.6: Taxonomic Barplots -------------------------------------
 source(file.path(scripts_dir, "Analysis", "5_compositional_plots.R"))
+
+
+
+
+
+
 
 # 5.7: Heatmap of Taxa ----------------------------------------
 source(file.path(scripts_dir, "Analysis", "5_heatmap.R"))

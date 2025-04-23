@@ -28,3 +28,7 @@ p_pca <- plot_ordination(ps_clr, pca_ord, color = "sample_or_control") +
 # Save
 ggsave(file.path(results_dir, "Figures", "16S_Beta", "pca_clr_taxa.jpeg"),
        plot = p_pca, width = 6, height = 4, dpi = 300)
+
+######################### Cleaning ###########################################
+# Clean temporary objects from your environment
+rm(p_pca, pca_ord, ps, ps_clr, ps_genus)
