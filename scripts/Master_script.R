@@ -313,7 +313,7 @@ if (0) source(file.path(scripts_dir, "Analysis", "1_decontamination_separates.R"
 if (0) source(file.path(scripts_dir, "Analysis", "2_quality_summary_stats.R"))
 
 # 5.4: Alpha Diversity ----------------------------------------
-if (0) source(file.path(scripts_dir, "Analysis", "3_alpha_diversity.R"))
+if (1) source(file.path(scripts_dir, "Analysis", "3_alpha_diversity.R"))
 
 # 5.5: Beta Diversity -----------------------------------------
 if (0) source(file.path(scripts_dir, "Analysis", "04a_beta_distance_ordination.R"))
