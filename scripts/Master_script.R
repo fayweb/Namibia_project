@@ -105,7 +105,7 @@ pacman::p_load(
   leaflet, kableExtra, broom, magrittr, data.table, sf, rnaturalearth,
   RColorBrewer, tmap, mapview, cowplot, magick, readxl, qgraph, vegan, ggvenn,
   decontam, microbiome, corncob, scales, ggsci, microViz, ggraph, ggtext,
-  ComplexHeatmap)
+  ComplexHeatmap, plotly)
 
 #microbiomAnalysis
 
